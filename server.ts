@@ -9,19 +9,19 @@ async function startServer() {
   const app = express();
   const PORT = 3000;
 
-  
+  // Configure Multer for memory storage
   const upload = multer({ storage: multer.memoryStorage() });
 
   app.use(express.json());
 
-  
+  // API Route: Handle Archive Upload
   app.post("/api/upload", upload.single("file"), async (req, res) => {
     try {
       if (!req.file) {
         return res.status(400).json({ error: "No file uploaded" });
       }
 
-      const platform = req.body.platform; 
+      const platform = req.body.platform; // 'instagram', 'facebook', 'twitter', 'youtube'
       const posts: string[] = [];
 
       if (req.file.mimetype === "application/zip" || req.file.originalname.endsWith(".zip")) {
@@ -31,7 +31,7 @@ async function startServer() {
         for (const entry of zipEntries) {
           const entryName = entry.entryName.toLowerCase();
           
-
+          // Instagram Parser
           if (platform === "instagram" && entryName.includes("posts/") && entryName.endsWith(".json")) {
             const data = JSON.parse(entry.getData().toString("utf8"));
             if (Array.isArray(data)) {
@@ -42,7 +42,7 @@ async function startServer() {
             }
           }
           
-          
+          // Facebook Parser
           if (platform === "facebook" && entryName.includes("posts/your_posts") && entryName.endsWith(".json")) {
             const data = JSON.parse(entry.getData().toString("utf8"));
             if (Array.isArray(data)) {
@@ -53,10 +53,10 @@ async function startServer() {
             }
           }
 
-          
+          // X (Twitter) Parser
           if (platform === "twitter" && entryName.includes("data/tweet") && (entryName.endsWith(".js") || entryName.endsWith(".json"))) {
             let content = entry.getData().toString("utf8");
-            
+            // Twitter .js files start with "window.YTD.tweet.part0 = "
             if (content.includes("=")) {
               content = content.substring(content.indexOf("=") + 1);
             }
@@ -72,7 +72,7 @@ async function startServer() {
             }
           }
 
-          
+          // YouTube Parser
           if (platform === "youtube" && entryName.includes("history/watch-history") && entryName.endsWith(".json")) {
             const data = JSON.parse(entry.getData().toString("utf8"));
             if (Array.isArray(data)) {
@@ -83,9 +83,9 @@ async function startServer() {
           }
         }
       } else if (req.file.mimetype === "application/json" || req.file.originalname.endsWith(".json")) {
-        
+        // Direct JSON upload
         const data = JSON.parse(req.file.buffer.toString("utf8"));
-        
+        // Generic extraction attempt
         if (Array.isArray(data)) {
           data.forEach(item => {
             const text = item.text || item.caption || item.post || item.title || item.full_text;
@@ -94,11 +94,11 @@ async function startServer() {
         }
       }
 
-      
+      // Clean and filter posts
       const cleanedPosts = Array.from(new Set(posts))
         .map(p => p.trim())
         .filter(p => p.length > 5)
-        .slice(0, 50); 
+        .slice(0, 50); // Limit to 50 for demo/performance
 
       res.json({ 
         success: true, 
@@ -113,7 +113,7 @@ async function startServer() {
     }
   });
 
-  
+  // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
       server: { middlewareMode: true },
