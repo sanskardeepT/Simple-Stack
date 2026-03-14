@@ -1,20 +1,89 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# 3rd Eye – AI Powered Social Media Risk Analyzer
 
-# Run and deploy your AI Studio app
+3rd Eye is an AI-powered web application designed to analyze social media posts for potential visa and compliance risks.  
+It uses Google Gemini AI to evaluate content and generate structured risk assessments.
 
-This contains everything you need to run your app locally.
+The system helps identify potentially sensitive, controversial, or high-risk posts before submission to authorities or during visa background reviews.
 
-View your app in AI Studio: https://ai.studio/apps/5233f63c-8ffe-4b38-98bf-869f7c5c14de
+---
 
-## Run Locally
+## 🚀 Features
 
-**Prerequisites:**  Node.js
+- AI-based post risk analysis
+- Risk level classification (Low / Medium / High)
+- Risk score generation (0–100)
+- Structured explanation of risk
+- Suggested action (Delete / Archive / Safe)
+- Clean and modern UI
+- Secure server-side API key handling
+- JSON-structured AI response validation
+
+---
+
+## 🏗️ Tech Stack
+
+### Frontend
+- React 19
+- TypeScript
+- Vite (Build Tool)
+- Tailwind CSS
+- Lucide Icons
+- Motion (for animations)
+
+### Backend
+- Node.js
+- Express.js
+- TypeScript (Server-side)
+- tsx runtime
+
+### AI Integration
+- Google Gemini API (`@google/genai`)
+- Structured JSON response schema validation
+
+### Deployment
+- Vercel (Frontend Hosting)
+- Environment Variable Configuration
+
+---
+
+## 📂 Project Structure
+3rd-eye/
+│
+├── server.ts # Express backend server
+├── src/
+│ ├── App.tsx # Main React component
+│ ├── components/ # UI Components
+│ ├── services/
+│ │ └── geminiService.ts # AI integration logic
+│ └── main.tsx
+│
+├── index.html
+├── vite.config.ts
+├── tsconfig.json
+├── .env.example
+└── package.json
 
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+## 🧠 How It Works
+
+1. User enters a social media post.
+2. The backend sends the content to the Gemini AI model.
+3. The AI analyzes the text using a structured schema.
+4. The response is parsed into:
+   - Risk Level
+   - Risk Score
+   - Explanation
+   - Suggested Action
+5. The result is displayed in the UI.
+
+---
+
+## 🛡 Security Design
+
+- API keys are handled server-side
+- Structured JSON schema ensures predictable AI output
+- Error handling fallback prevents app crashes
+- Environment-based configuration
+
+---
+
