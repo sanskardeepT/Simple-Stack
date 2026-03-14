@@ -11,7 +11,8 @@ import {
   Monitor, 
   AlertCircle,
   CheckCircle2,
-  ArrowRight
+  ArrowRight,
+  X
 } from 'lucide-react';
 
 interface GuideProps {
@@ -24,109 +25,92 @@ export const DataExportGuide: React.FC<GuideProps> = ({ platform, onClose }) => 
     instagram: {
       name: 'Instagram',
       icon: <Instagram className="w-6 h-6 text-pink-500" />,
+      description: "You can request a complete copy of your Instagram data through the Accounts Center. The data will be delivered as a .zip file. Make sure to select JSON format so it can be analyzed by our system.",
       steps: [
         "Open Instagram and go to your Profile.",
-        "Tap the Menu (three lines) and select 'Settings and privacy'.",
-        "Tap 'Accounts Center' at the top.",
-        "Select 'Your information and permissions' and then 'Download your information'.",
-        "Tap 'Request a download' and pick your Instagram account.",
-        "Choose 'Complete copy'.",
-        "IMPORTANT: Change 'Format' to JSON.",
-        "Tap 'Submit Request'. You'll get an email when your ZIP file is ready.",
-        "Download the ZIP file and upload it here to 3rd EYE."
+        "Tap the Menu (☰) and select Settings and Privacy.",
+        "Open Accounts Center.",
+        "Go to Your Information and Permissions.",
+        "Select Download Your Information.",
+        "Tap Request a Download.",
+        "Choose Complete Copy.",
+        "Select JSON format.",
+        "Submit the request and wait for the email download link.",
       ],
-      flow: `
-Open App
-  ↓
-Go to Settings
-  ↓
-Download Your Information
-  ↓
-Choose JSON
-  ↓
-Download ZIP
-  ↓
-Upload to 3rd EYE`,
+      dataIncluded: [
+        "Posts and media",
+        "Comments and likes",
+        "Stories and reels",
+        "Direct messages",
+        "Profile information",
+      ]
     },
     facebook: {
       name: 'Facebook',
       icon: <Facebook className="w-6 h-6 text-blue-500" />,
+      description: "Facebook allows you to download a full archive of your activity through the Accounts Center.",
       steps: [
-        "Open Facebook and tap your profile picture.",
-        "Go to 'Settings & privacy' and then 'Settings'.",
-        "Tap 'Accounts Center' at the top.",
-        "Select 'Your information and permissions' and then 'Download your information'.",
-        "Tap 'Request a download' and pick your Facebook account.",
-        "Choose 'Complete copy'.",
-        "IMPORTANT: Change 'Format' to JSON.",
-        "Tap 'Submit Request'. You'll get an email when your ZIP file is ready.",
-        "Download the ZIP file and upload it here to 3rd EYE."
+        "Open Facebook and go to Menu.",
+        "Select Settings & Privacy → Settings.",
+        "Open Accounts Center.",
+        "Select Your Information and Permissions.",
+        "Click Download Your Information.",
+        "Choose your Facebook account.",
+        "Select Complete Copy.",
+        "Choose JSON format.",
+        "Submit the request and wait for the email download link.",
       ],
-      flow: `
-Open App
-  ↓
-Go to Settings
-  ↓
-Download Your Information
-  ↓
-Choose JSON
-  ↓
-Download ZIP
-  ↓
-Upload to 3rd EYE`,
+      dataIncluded: [
+        "Posts and photos",
+        "Videos and comments",
+        "Messenger conversations",
+        "Friends list",
+        "Activity history",
+      ]
     },
     twitter: {
       name: 'X (Twitter)',
       icon: <Twitter className="w-6 h-6 text-zinc-400" />,
+      description: "X allows you to download a full archive of your account data including tweets and messages.",
       steps: [
-        "Open X and tap your profile icon.",
-        "Go to 'Settings and Support' and then 'Settings and privacy'.",
-        "Tap 'Your account' and then 'Download an archive of your data'.",
-        "Verify your identity with your password or a code.",
-        "Tap 'Request archive'.",
-        "Wait 24-48 hours. X will notify you when it's ready.",
-        "Download the ZIP file and upload it here to 3rd EYE."
+        "Open X and go to Settings and Privacy.",
+        "Select Your Account.",
+        "Click Download an Archive of Your Data.",
+        "Verify your password.",
+        "Tap Request Archive.",
+        "Wait for the notification or email.",
+        "Download the ZIP file when ready.",
       ],
-      flow: `
-Open App
-  ↓
-Go to Settings
-  ↓
-Download Your Information
-  ↓
-Wait 24-48 Hours
-  ↓
-Download ZIP
-  ↓
-Upload to 3rd EYE`,
+      dataIncluded: [
+        "Tweets and retweets",
+        "Likes",
+        "Direct messages",
+        "Profile data",
+        "Account activity history",
+      ]
     },
     youtube: {
       name: 'YouTube',
       icon: <Youtube className="w-6 h-6 text-red-500" />,
+      description: "YouTube data can be exported using Google Takeout.",
       steps: [
-        "Go to takeout.google.com on your phone or computer.",
-        "Click 'Deselect all'.",
-        "Find 'YouTube and YouTube Music' and check the box.",
-        "Click 'Multiple formats' and make sure 'History' is set to JSON.",
-        "Scroll to the bottom and click 'Next step'.",
-        "Click 'Create export'.",
-        "Check your email for the download link.",
-        "Download the ZIP file and upload it here to 3rd EYE."
+        "Go to takeout.google.com.",
+        "Sign in to your Google account.",
+        "Click Deselect All.",
+        "Select YouTube and YouTube Music.",
+        "Click Multiple Formats and ensure History = JSON.",
+        "Click Next Step.",
+        "Choose Send download link via email.",
+        "Click Create Export.",
+        "Download the ZIP file from the email link.",
       ],
-      flow: `
-Go to Google Takeout
-  ↓
-Select YouTube
-  ↓
-Choose JSON
-  ↓
-Create Export
-  ↓
-Check Email
-  ↓
-Download ZIP
-  ↓
-Upload to 3rd EYE`,
+      dataIncluded: [
+        "Watch history",
+        "Search history",
+        "Video comments",
+        "Uploaded videos",
+        "Playlists and subscriptions",
+      ]
     }
   };
 
@@ -146,19 +130,21 @@ Upload to 3rd EYE`,
           </div>
           <div>
             <h3 className="font-display font-bold text-xl">How to download your {guide.name} data</h3>
-            <p className="text-zinc-500 text-xs">Simple Step-by-Step Guide</p>
+            <p className="text-zinc-400 text-sm mt-1 max-w-md">{guide.description}</p>
           </div>
         </div>
         <button 
+          type="button"
           onClick={onClose}
           className="p-2 hover:bg-white/5 rounded-full transition-colors"
         >
-          <AlertCircle className="w-6 h-6 text-zinc-500 rotate-45" />
+          <X className="w-6 h-6 text-zinc-500" />
         </button>
       </div>
 
       <div className="overflow-y-auto p-8 space-y-8">
         <section className="space-y-4">
+          <h4 className="font-bold mb-4 text-zinc-400 text-xs uppercase tracking-widest">Steps to Download</h4>
           <div className="space-y-3">
             {guide.steps.map((step, i) => (
               <div key={i} className="flex gap-4 items-start">
@@ -171,17 +157,24 @@ Upload to 3rd EYE`,
           </div>
         </section>
 
-        <section className="pt-6 border-t border-white/5">
-          <h4 className="font-bold mb-4 text-zinc-400 text-xs uppercase tracking-widest">Process Flow</h4>
-          <pre className="font-mono text-xs text-blue-400 bg-black/40 p-6 rounded-2xl border border-white/5 leading-relaxed text-center">
-            {guide.flow}
-          </pre>
+        <section className="pt-8 border-t border-white/5">
+          <h4 className="font-bold mb-4 text-zinc-400 text-xs uppercase tracking-widest">Data Included</h4>
+          <ul className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2">
+            {guide.dataIncluded.map((item, i) => (
+              <li key={i} className="flex items-center gap-3 text-sm text-zinc-300">
+                <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                <span>{item}</span>
+              </li>
+            ))}
+          </ul>
         </section>
 
-        <div className="pt-6 flex justify-end">
+        <div className="pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
+          <p className="text-sm text-zinc-500 text-center md:text-left">Upload the downloaded ZIP file to our platform to analyze your social media activity.</p>
           <button 
+            type="button"
             onClick={onClose}
-            className="px-8 py-3 rounded-xl bg-white text-black text-sm font-bold hover:bg-zinc-200 transition-all"
+            className="px-8 py-3 rounded-xl bg-white text-black text-sm font-bold hover:bg-zinc-200 transition-all w-full md:w-auto shrink-0"
           >
             I'm ready to upload
           </button>

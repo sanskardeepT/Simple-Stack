@@ -5,8 +5,7 @@ import {
   Shield, 
   Upload, 
   CheckCircle2, 
-  AlertTriangle, 
-  Info, 
+  AlertTriangle,
   ChevronRight, 
   Instagram, 
   Facebook, 
@@ -18,7 +17,8 @@ import {
   Trash2,
   Archive,
   Search,
-  HelpCircle
+  Info,
+  HelpCircle,
 } from 'lucide-react';
 import { analyzePost, AnalysisResult } from './services/geminiService';
 import { DataExportGuide } from './components/Guide';
@@ -99,6 +99,7 @@ export default function App() {
           </div>
           {step !== 'home' && (
             <button 
+              type="button"
               onClick={reset}
               className="text-sm text-zinc-400 hover:text-white transition-colors flex items-center gap-2"
             >
@@ -137,6 +138,7 @@ export default function App() {
               
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-24">
                 <button 
+                  type="button"
                   onClick={() => setStep('platform')}
                   className="w-full sm:w-auto px-10 py-5 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white font-bold transition-all flex items-center justify-center gap-3 group text-lg shadow-lg shadow-blue-500/20"
                 >
@@ -236,6 +238,7 @@ export default function App() {
                 ].map((p) => (
                   <button
                     key={p.id}
+                    type="button"
                     onClick={() => {
                       setPlatform(p.id as Platform);
                       setStep('upload');
@@ -261,6 +264,7 @@ export default function App() {
             >
               <div className="text-center mb-12">
                 <button 
+                  type="button"
                   onClick={() => setStep('platform')}
                   className="text-sm text-zinc-500 hover:text-white mb-6 inline-flex items-center gap-2"
                 >
@@ -302,18 +306,19 @@ export default function App() {
                 <div className="flex items-center justify-between mb-3">
                   <h4 className="font-bold flex items-center gap-2">
                     <Info className="w-4 h-4 text-blue-400" />
-                    How to get your data?
+                    Need help getting your data?
                   </h4>
                   <button 
+                    type="button"
                     onClick={() => setShowGuide(true)}
                     className="text-xs font-bold text-blue-400 hover:text-blue-300 flex items-center gap-1 transition-colors"
                   >
                     <HelpCircle className="w-3 h-3" />
-                    View Detailed Guide
+                    View Guide
                   </button>
                 </div>
                 <p className="text-sm text-zinc-400 leading-relaxed">
-                  Go to your {platform} settings, find "Your Information" or "Download Your Data", and request a JSON format archive. Once it's ready, download the .zip and upload it here.
+                  Not sure how to download your {platform} archive? Check our step-by-step guide to export your data correctly.
                 </p>
               </div>
 
@@ -326,12 +331,14 @@ export default function App() {
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
                       onClick={() => setShowGuide(false)}
-                      className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+                      className="absolute inset-0 bg-black/80 backdrop-blur-sm cursor-pointer"
                     />
-                    <DataExportGuide 
-                      platform={platform!} 
-                      onClose={() => setShowGuide(false)} 
-                    />
+                    <div className="relative z-10 w-full max-w-2xl flex justify-center">
+                      <DataExportGuide 
+                        platform={platform!} 
+                        onClose={() => setShowGuide(false)} 
+                      />
+                    </div>
                   </div>
                 )}
               </AnimatePresence>
@@ -415,6 +422,7 @@ export default function App() {
                   <p className="text-zinc-400">Comprehensive analysis of your {platform} presence.</p>
                 </div>
                 <button 
+                  type="button"
                   onClick={reset}
                   className="px-6 py-3 rounded-xl bg-white text-black font-bold hover:bg-zinc-200 transition-all flex items-center gap-2"
                 >
@@ -489,10 +497,10 @@ export default function App() {
                       </div>
 
                       <div className="flex gap-2">
-                        <button className="p-3 rounded-xl bg-white/5 hover:bg-red-500/20 hover:text-red-400 transition-all">
+                        <button type="button" className="p-3 rounded-xl bg-white/5 hover:bg-red-500/20 hover:text-red-400 transition-all">
                           <Trash2 className="w-5 h-5" />
                         </button>
-                        <button className="p-3 rounded-xl bg-white/5 hover:bg-amber-500/20 hover:text-amber-400 transition-all">
+                        <button type="button" className="p-3 rounded-xl bg-white/5 hover:bg-amber-500/20 hover:text-amber-400 transition-all">
                           <Archive className="w-5 h-5" />
                         </button>
                       </div>
@@ -513,12 +521,7 @@ export default function App() {
             <span className="font-display font-bold text-lg">3rd EYE</span>
           </div>
           <div className="text-center">
-            <p className="text-zinc-500 text-sm mb-1">
-              Developed by <span className="text-zinc-300 font-bold">Sanskardeep, Rugved, Parth</span>
-            </p>
-            <p className="text-zinc-600 text-[10px] uppercase tracking-widest font-bold">
-              © 2026 3rd EYE Intelligence Systems. All rights reserved.
-            </p>
+            <p className="text-zinc-500 text-sm">© 2026 Sanskardeep, Rugved, Parth | Social Media Analysis Project</p>
           </div>
           <div className="flex gap-6 text-zinc-400 text-sm">
             <a href="#" className="hover:text-white transition-colors">Privacy</a>
