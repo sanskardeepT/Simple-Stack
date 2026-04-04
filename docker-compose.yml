@@ -1,0 +1,65 @@
+version: "3.9"
+
+services:
+  api:
+    build:
+      context: ./backend
+      target: build
+    working_dir: /app
+    volumes:
+      - ./backend/src:/app/src
+    command: npm run dev
+    env_file: ./backend/.env.development
+    ports:
+      - "3000:3000"
+    depends_on:
+      - mongo
+      - redis
+
+  client:
+    build:
+      context: ./frontend
+      target: build
+    working_dir: /app
+    volumes:
+      - ./frontend/src:/app/src
+    command: npm run dev -- --host
+    environment:
+      VITE_API_URL: http://localhost:3000
+    ports:
+      - "5173:5173"
+    depends_on:
+      - api
+
+  mongo:
+    image: mongo:7
+    volumes:
+      - mongo_data:/data/db
+    ports:
+      - "27017:27017"
+
+  redis:
+    image: redis:7-alpine
+    command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+
+  mongo-express:
+    image: mongo-express
+    ports:
+      - "8081:8081"
+    depends_on:
+      - mongo
+
+  redis-commander:
+    image: rediscommander/redis-commander
+    ports:
+      - "8082:8081"
+    depends_on:
+      - redis
+
+volumes:
+  mongo_data:
+  redis_data:
