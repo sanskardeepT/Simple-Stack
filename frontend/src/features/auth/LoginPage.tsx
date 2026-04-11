@@ -1,54 +1,60 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { Navigate, Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { z } from "zod";
-import { Input } from "../../components/ui/Input.js";
-import { Button } from "../../components/ui/Button.js";
 import { useAuthStore } from "../../lib/store/auth.store.js";
 import { useLogin } from "./useAuth.js";
 
-const schema = z.object({
-  email: z.string().email(),
-  password: z.string().min(1),
-});
-
-type FormValues = z.infer<typeof schema>;
+const schema = z.object({ email: z.string().email(), password: z.string().min(1) });
+type F = z.infer<typeof schema>;
 
 export function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const login = useLogin();
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<FormValues>({
-    resolver: zodResolver(schema),
-  });
+  const { register, handleSubmit, formState: { errors } } = useForm<F>({ resolver: zodResolver(schema) });
 
-  if (isAuthenticated) {
-    return <Navigate replace to="/" />;
-  }
+  if (isAuthenticated) return <Navigate replace to="/" />;
 
   return (
     <div className="login-shell">
-      <form
-        className="login-card stack"
-        onSubmit={handleSubmit(async (values) => {
-          await login.mutateAsync(values);
-          const destination = (location.state as { from?: { pathname?: string } } | null)?.from?.pathname ?? "/";
-          navigate(destination, { replace: true });
-        })}
-      >
-        <h1>Sign in</h1>
-        <Input label="Email" type="email" error={errors.email?.message} {...register("email")} />
-        <Input label="Password" type="password" error={errors.password?.message} {...register("password")} />
-        <Button type="submit" disabled={login.isPending}>{login.isPending ? "Signing in..." : "Sign in"}</Button>
-        <p className="muted">
-          No account? <Link to="/register">Create one</Link>
+      <div className="login-card stack">
+        <div className="login-logo">
+          <div className="login-logo-icon">S</div>
+          <div className="login-title">SimpleStack</div>
+          <div className="login-subtitle">Sign in to your CMS</div>
+        </div>
+
+        {login.error && (
+          <div className="alert alert-error">
+            {login.error instanceof Error ? login.error.message : "Login failed. Check your email and password."}
+          </div>
+        )}
+
+        <form className="stack" onSubmit={handleSubmit(async (v) => {
+          await login.mutateAsync(v);
+          navigate((location.state as { from?: { pathname?: string } } | null)?.from?.pathname ?? "/", { replace: true });
+        })}>
+          <div className="field">
+            <label className="field-label">Email address</label>
+            <input className="field-input" type="email" placeholder="you@example.com" {...register("email")} />
+            {errors.email && <span className="field-error">{errors.email.message}</span>}
+          </div>
+          <div className="field">
+            <label className="field-label">Password</label>
+            <input className="field-input" type="password" placeholder="••••••••" {...register("password")} />
+            {errors.password && <span className="field-error">{errors.password.message}</span>}
+          </div>
+          <button type="submit" className="btn btn-primary" disabled={login.isPending} style={{ width: "100%", marginTop: 4 }}>
+            {login.isPending ? "Signing in…" : "Sign in →"}
+          </button>
+        </form>
+
+        <p className="muted" style={{ textAlign: "center", fontSize: 13 }}>
+          No account? <Link to="/register" style={{ color: "var(--accent)" }}>Create one free</Link>
         </p>
-      </form>
+      </div>
     </div>
   );
 }

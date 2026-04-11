@@ -1,28 +1,15 @@
-import type { PaginatedMeta } from "../../types/api.types.js";
-import { Button } from "./Button.js";
+type Meta = { page?: number; total?: number; limit?: number; totalPages?: number } | undefined;
 
-type Props = {
-  meta?: Partial<PaginatedMeta>;
-  onPageChange: (page: number) => void;
-};
-
-export function Pagination({ meta, onPageChange }: Props) {
-  const page = Number(meta?.page ?? 1);
-  const totalPages = Number(meta?.totalPages ?? 1);
+export function Pagination({ meta, onPageChange }: { meta: Meta; onPageChange: (p: number) => void }) {
+  if (!meta || (meta.totalPages ?? 1) <= 1) return null;
+  const current = meta.page ?? 1;
+  const total = meta.totalPages ?? 1;
 
   return (
-    <div style={{ alignItems: "center", display: "flex", gap: 12, justifyContent: "space-between", marginTop: 16 }}>
-      <span className="muted">
-        Page {page} of {totalPages}
-      </span>
-      <div style={{ display: "flex", gap: 8 }}>
-        <Button variant="secondary" disabled={page <= 1} onClick={() => onPageChange(page - 1)}>
-          Previous
-        </Button>
-        <Button variant="secondary" disabled={page >= totalPages} onClick={() => onPageChange(page + 1)}>
-          Next
-        </Button>
-      </div>
+    <div className="pagination">
+      <button className="btn btn-secondary btn-sm" disabled={current <= 1} onClick={() => onPageChange(current - 1)}>← Prev</button>
+      <span className="pagination-info">Page {current} of {total}</span>
+      <button className="btn btn-secondary btn-sm" disabled={current >= total} onClick={() => onPageChange(current + 1)}>Next →</button>
     </div>
   );
 }

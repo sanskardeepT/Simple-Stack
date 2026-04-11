@@ -4,29 +4,23 @@ import { createBrowserRouter, NavLink, Outlet } from "react-router-dom";
 import { ErrorBoundary } from "../components/ErrorBoundary.js";
 import { PageSkeleton } from "../components/PageSkeleton.js";
 import { ProtectedRoute } from "../components/ProtectedRoute.js";
-import { Button } from "../components/ui/Button.js";
 import { useLogout } from "../features/auth/useAuth.js";
 import { useAuthStore } from "../lib/store/auth.store.js";
 
-const LoginPage = lazy(async () => import("../features/auth/LoginPage.js").then((module) => ({ default: module.LoginPage })));
-const RegisterPage = lazy(async () => import("../features/auth/RegisterPage.js").then((module) => ({ default: module.RegisterPage })));
-const DashboardPage = lazy(async () => import("../features/app/DashboardPage.js").then((module) => ({ default: module.DashboardPage })));
-const EntriesPage = lazy(async () => import("../features/entries/EntriesPage.js").then((module) => ({ default: module.EntriesPage })));
-const EntryDetailPage = lazy(async () => import("../features/entries/EntryDetailPage.js").then((module) => ({ default: module.EntryDetailPage })));
-const MediaPage = lazy(async () => import("../features/media/MediaPage.js").then((module) => ({ default: module.MediaPage })));
-const ContentTypesPage = lazy(async () =>
-  import("../features/content-types/ContentTypesPage.js").then((module) => ({ default: module.ContentTypesPage })),
-);
-const AnalyticsDashboard = lazy(async () =>
-  import("../features/analytics/AnalyticsDashboard.js").then((module) => ({ default: module.AnalyticsDashboard })),
-);
-const SettingsPage = lazy(async () => import("../features/settings/SettingsPage.js").then((module) => ({ default: module.SettingsPage })));
-const UsersPage = lazy(async () => import("../features/users/UsersPage.js").then((module) => ({ default: module.UsersPage })));
-const UnauthorizedPage = lazy(async () =>
-  import("../features/app/UnauthorizedPage.js").then((module) => ({ default: module.UnauthorizedPage })),
-);
+const LoginPage = lazy(async () => import("../features/auth/LoginPage.js").then((m) => ({ default: m.LoginPage })));
+const RegisterPage = lazy(async () => import("../features/auth/RegisterPage.js").then((m) => ({ default: m.RegisterPage })));
+const DashboardPage = lazy(async () => import("../features/app/DashboardPage.js").then((m) => ({ default: m.DashboardPage })));
+const EntriesPage = lazy(async () => import("../features/entries/EntriesPage.js").then((m) => ({ default: m.EntriesPage })));
+const EntryDetailPage = lazy(async () => import("../features/entries/EntryDetailPage.js").then((m) => ({ default: m.EntryDetailPage })));
+const MediaPage = lazy(async () => import("../features/media/MediaPage.js").then((m) => ({ default: m.MediaPage })));
+const ContentTypesPage = lazy(async () => import("../features/content-types/ContentTypesPage.js").then((m) => ({ default: m.ContentTypesPage })));
+const AnalyticsDashboard = lazy(async () => import("../features/analytics/AnalyticsDashboard.js").then((m) => ({ default: m.AnalyticsDashboard })));
+const SettingsPage = lazy(async () => import("../features/settings/SettingsPage.js").then((m) => ({ default: m.SettingsPage })));
+const UsersPage = lazy(async () => import("../features/users/UsersPage.js").then((m) => ({ default: m.UsersPage })));
+const ConnectPage = lazy(async () => import("../features/connect/ConnectPage.js").then((m) => ({ default: m.ConnectPage })));
+const UnauthorizedPage = lazy(async () => import("../features/app/UnauthorizedPage.js").then((m) => ({ default: m.UnauthorizedPage })));
 
-function RouteShell({ children }: { children: ReactNode }) {
+function Shell({ children }: { children: ReactNode }) {
   return (
     <ErrorBoundary>
       <Suspense fallback={<PageSkeleton />}>{children}</Suspense>
@@ -34,164 +28,112 @@ function RouteShell({ children }: { children: ReactNode }) {
   );
 }
 
+const NAV_ITEMS = [
+  { to: "/", label: "Dashboard", icon: "⬡", section: "main", exact: true },
+  { to: "/entries", label: "Content", icon: "✦", section: "main" },
+  { to: "/media", label: "Media", icon: "◈", section: "main" },
+  { to: "/connect", label: "Connect Website", icon: "⟳", section: "main" },
+  { to: "/content-types", label: "Content Types", icon: "⊞", section: "manage", roles: ["admin", "editor"] as const },
+  { to: "/analytics", label: "Analytics", icon: "◎", section: "manage", roles: ["admin"] as const },
+  { to: "/users", label: "Users", icon: "⊕", section: "manage", roles: ["admin"] as const },
+  { to: "/settings", label: "Settings", icon: "◉", section: "manage", roles: ["admin"] as const },
+] as const;
+
 function AppLayout() {
   const logout = useLogout();
   const user = useAuthStore((state) => state.user);
 
+  const visibleItems = NAV_ITEMS.filter((item) => {
+    if (!("roles" in item) || !item.roles) return true;
+    return (item.roles as readonly ("admin" | "editor" | "viewer")[]).includes(user?.role as "admin" | "editor" | "viewer");
+  });
+
+  const mainItems = visibleItems.filter((i) => i.section === "main");
+  const manageItems = visibleItems.filter((i) => i.section === "manage");
+
   return (
     <div className="app-shell">
-      <div className="layout">
-        <aside className="sidebar">
-          <h2>Simple Stack</h2>
-          <p className="muted">{user ? `${user.name} (${user.role})` : "CMS workspace"}</p>
-          <nav>
-            <NavLink className={({ isActive }) => `nav-link${isActive ? " active" : ""}`} to="/">
-              Dashboard
+      <aside className="sidebar">
+        <div className="sidebar-logo">
+          <div className="sidebar-logo-icon">S</div>
+          <div className="sidebar-logo-text">
+            Simple<span>Stack</span>
+          </div>
+        </div>
+
+        {user && (
+          <div className="sidebar-user">
+            <div className="sidebar-user-name">{user.name}</div>
+            <div className="sidebar-user-role">{user.role}</div>
+          </div>
+        )}
+
+        <nav>
+          {mainItems.map((item) => (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              end={"exact" in item && item.exact}
+              className={({ isActive }) => `nav-link${isActive ? " active" : ""}`}
+            >
+              <span className="nav-link-icon">{item.icon}</span>
+              {item.label}
             </NavLink>
-            <NavLink className={({ isActive }) => `nav-link${isActive ? " active" : ""}`} to="/entries">
-              Entries
-            </NavLink>
-            <NavLink className={({ isActive }) => `nav-link${isActive ? " active" : ""}`} to="/media">
-              Media
-            </NavLink>
-            {(user?.role === "admin" || user?.role === "editor") && (
-              <NavLink className={({ isActive }) => `nav-link${isActive ? " active" : ""}`} to="/content-types">
-                Content Types
-              </NavLink>
-            )}
-            {user?.role === "admin" && (
-              <NavLink className={({ isActive }) => `nav-link${isActive ? " active" : ""}`} to="/analytics">
-                Analytics
-              </NavLink>
-            )}
-            {user?.role === "admin" && (
-              <NavLink className={({ isActive }) => `nav-link${isActive ? " active" : ""}`} to="/users">
-                Users
-              </NavLink>
-            )}
-            {user?.role === "admin" && (
-              <NavLink className={({ isActive }) => `nav-link${isActive ? " active" : ""}`} to="/settings">
-                Settings
-              </NavLink>
-            )}
-          </nav>
-          <Button style={{ marginTop: 16, width: "100%" }} variant="secondary" onClick={() => logout.mutate()}>
+          ))}
+
+          {manageItems.length > 0 && (
+            <>
+              <div className="sidebar-section-label">Manage</div>
+              {manageItems.map((item) => (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  className={({ isActive }) => `nav-link${isActive ? " active" : ""}`}
+                >
+                  <span className="nav-link-icon">{item.icon}</span>
+                  {item.label}
+                </NavLink>
+              ))}
+            </>
+          )}
+        </nav>
+
+        <div className="sidebar-footer">
+          <button
+            className="nav-link btn-ghost"
+            style={{ width: "100%", border: "none", cursor: "pointer", background: "none" }}
+            onClick={() => logout.mutate()}
+          >
+            <span className="nav-link-icon">→</span>
             Sign out
-          </Button>
-        </aside>
-        <main className="stack">
-          <Outlet />
-        </main>
-      </div>
+          </button>
+        </div>
+      </aside>
+
+      <main className="main-content">
+        <Outlet />
+      </main>
     </div>
   );
 }
 
 export const router = createBrowserRouter([
-  {
-    path: "/login",
-    element: (
-      <RouteShell>
-        <LoginPage />
-      </RouteShell>
-    ),
-  },
-  {
-    path: "/register",
-    element: (
-      <RouteShell>
-        <RegisterPage />
-      </RouteShell>
-    ),
-  },
-  {
-    path: "/unauthorized",
-    element: (
-      <RouteShell>
-        <UnauthorizedPage />
-      </RouteShell>
-    ),
-  },
+  { path: "/login", element: <Shell><LoginPage /></Shell> },
+  { path: "/register", element: <Shell><RegisterPage /></Shell> },
+  { path: "/unauthorized", element: <Shell><UnauthorizedPage /></Shell> },
   {
     path: "/",
-    element: (
-      <ProtectedRoute>
-        <AppLayout />
-      </ProtectedRoute>
-    ),
+    element: <ProtectedRoute><AppLayout /></ProtectedRoute>,
     children: [
-      {
-        index: true,
-        element: (
-          <RouteShell>
-            <DashboardPage />
-          </RouteShell>
-        ),
-      },
-      {
-        path: "entries",
-        element: (
-          <RouteShell>
-            <EntriesPage />
-          </RouteShell>
-        ),
-      },
-      {
-        path: "entries/:id",
-        element: (
-          <RouteShell>
-            <EntryDetailPage />
-          </RouteShell>
-        ),
-      },
-      {
-        path: "media",
-        element: (
-          <RouteShell>
-            <MediaPage />
-          </RouteShell>
-        ),
-      },
-      {
-        path: "content-types",
-        element: (
-          <ProtectedRoute allowedRoles={["admin", "editor"]}>
-            <RouteShell>
-              <ContentTypesPage />
-            </RouteShell>
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: "analytics",
-        element: (
-          <ProtectedRoute allowedRoles={["admin"]}>
-            <RouteShell>
-              <AnalyticsDashboard />
-            </RouteShell>
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: "settings",
-        element: (
-          <ProtectedRoute allowedRoles={["admin"]}>
-            <RouteShell>
-              <SettingsPage />
-            </RouteShell>
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: "users",
-        element: (
-          <ProtectedRoute allowedRoles={["admin"]}>
-            <RouteShell>
-              <UsersPage />
-            </RouteShell>
-          </ProtectedRoute>
-        ),
-      },
+      { index: true, element: <Shell><DashboardPage /></Shell> },
+      { path: "entries", element: <Shell><EntriesPage /></Shell> },
+      { path: "entries/:id", element: <Shell><EntryDetailPage /></Shell> },
+      { path: "media", element: <Shell><MediaPage /></Shell> },
+      { path: "connect", element: <Shell><ConnectPage /></Shell> },
+      { path: "content-types", element: <ProtectedRoute allowedRoles={["admin", "editor"]}><Shell><ContentTypesPage /></Shell></ProtectedRoute> },
+      { path: "analytics", element: <ProtectedRoute allowedRoles={["admin"]}><Shell><AnalyticsDashboard /></Shell></ProtectedRoute> },
+      { path: "settings", element: <ProtectedRoute allowedRoles={["admin"]}><Shell><SettingsPage /></Shell></ProtectedRoute> },
+      { path: "users", element: <ProtectedRoute allowedRoles={["admin"]}><Shell><UsersPage /></Shell></ProtectedRoute> },
     ],
   },
 ]);

@@ -1,29 +1,115 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Pagination } from "../../components/ui/Pagination.js";
-import { Table } from "../../components/ui/Table.js";
-import { useMedia } from "./useMedia.js";
+import { useCreateMedia, useDeleteMedia, useMedia } from "./useMedia.js";
+
+function fileIcon(mime: string) {
+  if (mime.startsWith("image/")) return null;
+  if (mime.includes("pdf")) return "📄";
+  if (mime.includes("word")) return "📝";
+  return "📎";
+}
+
+function formatSize(bytes: number) {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+}
 
 export function MediaPage() {
   const [page, setPage] = useState(1);
   const query = useMedia({ page });
+  const upload = useCreateMedia();
+  const remove = useDeleteMedia();
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [dragging, setDragging] = useState(false);
+
+  const files = (query.data?.data ?? []) as Array<Record<string, unknown>>;
+
+  function handleFiles(fileList: FileList | null) {
+    if (!fileList) return;
+    Array.from(fileList).forEach((file) => {
+      const fd = new FormData();
+      fd.append("file", file);
+      upload.mutate(fd);
+    });
+  }
 
   return (
-    <div className="panel stack">
+    <div className="stack-lg">
       <div className="page-header">
         <div>
-          <h1>Media Library</h1>
-          <p className="muted">Track uploaded assets and delivery metadata.</p>
+          <div className="page-title">Media Library</div>
+          <div className="page-subtitle">Images, PDFs, and documents you&apos;ve uploaded.</div>
         </div>
+        <button className="btn btn-primary" onClick={() => inputRef.current?.click()}>+ Upload File</button>
       </div>
-      <Table
-        columns={[
-          { header: "Filename", key: "filename" },
-          { header: "Type", key: "mimeType" },
-          { header: "Size", key: "size" },
-          { header: "URL", key: "url" },
-        ]}
-        data={(query.data?.data ?? []) as Array<Record<string, unknown>>}
+
+      <div
+        className="panel"
+        style={{
+          border: dragging ? "2px dashed var(--accent)" : "2px dashed var(--border)",
+          background: dragging ? "var(--accent-glow)" : "var(--surface)",
+          borderRadius: "var(--radius-lg)",
+          padding: 32,
+          textAlign: "center",
+          cursor: "pointer",
+          transition: "all 0.15s",
+        }}
+        onClick={() => inputRef.current?.click()}
+        onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+        onDragLeave={() => setDragging(false)}
+        onDrop={(e) => { e.preventDefault(); setDragging(false); handleFiles(e.dataTransfer.files); }}
+      >
+        <div style={{ fontSize: 32, marginBottom: 8 }}>◈</div>
+        <div style={{ fontWeight: 600, marginBottom: 4 }}>Drop files here or click to upload</div>
+        <div className="muted text-sm">Images (JPG, PNG, WebP, GIF), PDFs, and Word docs up to 10MB</div>
+      </div>
+
+      <input
+        ref={inputRef}
+        type="file"
+        multiple
+        accept="image/*,.pdf,.doc,.docx"
+        style={{ display: "none" }}
+        onChange={(e) => handleFiles(e.target.files)}
       />
+
+      {upload.isPending && (
+        <div className="alert alert-success">Uploading…</div>
+      )}
+
+      {files.length === 0 && !query.isPending ? (
+        <div className="empty-state">
+          <div className="empty-state-icon">◈</div>
+          <div className="empty-state-title">No files yet</div>
+          <div className="empty-state-desc">Upload your first image or document above.</div>
+        </div>
+      ) : (
+        <div className="media-grid">
+          {files.map((file) => (
+            <div key={String(file._id)} className="media-card">
+              <div className="media-card-thumb">
+                {String(file.mimeType ?? "").startsWith("image/") ? (
+                  <img src={String(file.url)} alt={String(file.alt ?? file.filename)} loading="lazy" />
+                ) : (
+                  <span>{fileIcon(String(file.mimeType ?? ""))}</span>
+                )}
+              </div>
+              <div className="media-card-info">
+                <div className="media-card-name">{String(file.originalName ?? file.filename)}</div>
+                <div className="media-card-size">{formatSize(Number(file.size ?? 0))}</div>
+                <button
+                  className="btn btn-danger btn-sm"
+                  style={{ marginTop: 6, width: "100%" }}
+                  onClick={() => { if (confirm("Delete this file?")) remove.mutate(String(file._id)); }}
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
       <Pagination meta={query.data?.meta} onPageChange={setPage} />
     </div>
   );

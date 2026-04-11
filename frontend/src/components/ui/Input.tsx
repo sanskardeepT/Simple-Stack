@@ -1,24 +1,14 @@
 import type { InputHTMLAttributes } from "react";
 
-type Props = InputHTMLAttributes<HTMLInputElement> & {
-  label: string;
-  error?: string;
-};
+type Props = InputHTMLAttributes<HTMLInputElement> & { label: string; error?: string; hint?: string; };
 
-export function Input({ error, label, ...props }: Props) {
+export function Input({ error, hint, label, className = "", ...props }: Props) {
   return (
-    <label className="stack" style={{ gap: 8 }}>
-      <span style={{ fontWeight: 600 }}>{label}</span>
-      <input
-        {...props}
-        style={{
-          background: "#fff",
-          border: "1px solid var(--border)",
-          borderRadius: 14,
-          padding: "12px 14px",
-        }}
-      />
-      {error ? <span style={{ color: "var(--danger)", fontSize: 14 }}>{error}</span> : null}
-    </label>
+    <div className="field">
+      <label className="field-label">{label}</label>
+      <input className={`field-input ${className}`} {...props} />
+      {error && <span className="field-error">{error}</span>}
+      {hint && !error && <span className="field-hint">{hint}</span>}
+    </div>
   );
 }
