@@ -54,18 +54,26 @@ function AppLayout() {
             <NavLink className={({ isActive }) => `nav-link${isActive ? " active" : ""}`} to="/media">
               Media
             </NavLink>
-            <NavLink className={({ isActive }) => `nav-link${isActive ? " active" : ""}`} to="/content-types">
-              Content Types
-            </NavLink>
-            <NavLink className={({ isActive }) => `nav-link${isActive ? " active" : ""}`} to="/analytics">
-              Analytics
-            </NavLink>
-            <NavLink className={({ isActive }) => `nav-link${isActive ? " active" : ""}`} to="/users">
-              Users
-            </NavLink>
-            <NavLink className={({ isActive }) => `nav-link${isActive ? " active" : ""}`} to="/settings">
-              Settings
-            </NavLink>
+            {(user?.role === "admin" || user?.role === "editor") && (
+              <NavLink className={({ isActive }) => `nav-link${isActive ? " active" : ""}`} to="/content-types">
+                Content Types
+              </NavLink>
+            )}
+            {user?.role === "admin" && (
+              <NavLink className={({ isActive }) => `nav-link${isActive ? " active" : ""}`} to="/analytics">
+                Analytics
+              </NavLink>
+            )}
+            {user?.role === "admin" && (
+              <NavLink className={({ isActive }) => `nav-link${isActive ? " active" : ""}`} to="/users">
+                Users
+              </NavLink>
+            )}
+            {user?.role === "admin" && (
+              <NavLink className={({ isActive }) => `nav-link${isActive ? " active" : ""}`} to="/settings">
+                Settings
+              </NavLink>
+            )}
           </nav>
           <Button style={{ marginTop: 16, width: "100%" }} variant="secondary" onClick={() => logout.mutate()}>
             Sign out

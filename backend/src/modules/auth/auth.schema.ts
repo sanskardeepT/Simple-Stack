@@ -31,10 +31,14 @@ export const refreshSchema = z.object({
 
 export const changePasswordSchema = z.object({
   body: z.object({
-    currentPassword: z.string().min(1),
-    newPassword: z.string().min(8).regex(passwordPattern, {
-      message: "Password must include uppercase, lowercase, number, and special character",
-    }),
+    currentPassword: z.string().min(1, "Current password is required"),
+    newPassword: z
+      .string()
+      .min(8, "Password must be at least 8 characters")
+      .regex(/[A-Z]/, "Must contain at least one uppercase letter")
+      .regex(/[0-9]/, "Must contain at least one number")
+      .regex(/[a-z]/, "Password must include lowercase")
+      .regex(/[^A-Za-z\d]/, "Password must include a special character"),
   }),
   params: z.object({}),
   query: z.object({}),

@@ -30,7 +30,7 @@ export const corsMiddleware = cors({
       return;
     }
 
-    callback(null, false);
+    callback(new Error("CORS: Origin not allowed"));
   },
 });
 

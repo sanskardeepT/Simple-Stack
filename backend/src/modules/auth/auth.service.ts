@@ -180,7 +180,7 @@ export const authService = {
       throw new ApiError(401, "INVALID_CREDENTIALS", "Current password is incorrect");
     }
 
-    user.passwordHash = newPassword;
+    user.passwordHash = await bcrypt.hash(newPassword, 12);
     await user.save();
     await authRepository.revokeUserTokens(userId);
     return { success: true };

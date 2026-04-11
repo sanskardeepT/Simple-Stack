@@ -100,6 +100,11 @@ export const mediaService = {
     if (!deleted) {
       throw new ApiError(404, "NOT_FOUND", "Media not found");
     }
+    const storageKey = "storageKey" in deleted ? deleted.storageKey : undefined;
+    if (!s3Client && storageKey) {
+      const absolutePath = path.join(uploadRoot, storageKey);
+      await fs.unlink(absolutePath).catch(() => {});
+    }
     return deleted;
   },
 };

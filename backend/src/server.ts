@@ -30,7 +30,7 @@ async function shutdown(signal: string): Promise<void> {
 async function bootstrap(): Promise<void> {
   await connectDB();
   await redis.ping();
-  startWorkers();
+  await startWorkers();
 
   const app = createApp();
   server = app.listen(env.PORT, () => {

@@ -1,5 +1,7 @@
 import cookieParser from "cookie-parser";
 import express from "express";
+import mongoose from "mongoose";
+import { redis } from "./config/redis.js";
 import { ApiError } from "./lib/errors.js";
 import { errorHandler } from "./middleware/error-handler.js";
 import { requestLogger } from "./middleware/request-logger.js";
@@ -17,9 +19,21 @@ export function createApp() {
   app.use(cookieParser());
   app.use(globalRateLimit);
   app.use("/api/v1", v1Routes);
-  app.get("/health", (_req, res) => {
+  app.get("/health", async (_req, res) => {
+    let redisStatus = "ok";
+    let dbStatus = "connected";
+    try {
+      await redis.ping();
+    } catch {
+      redisStatus = "error";
+    }
+    if (mongoose.connection.readyState !== 1) {
+      dbStatus = "disconnected";
+    }
     res.status(200).json({
       status: "ok",
+      db: dbStatus,
+      redis: redisStatus,
       uptime: process.uptime(),
       timestamp: new Date().toISOString(),
     });
