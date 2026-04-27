@@ -1,199 +1,119 @@
-# Simple Stack
+# SimpleStack
 
-Simple Stack is a production-oriented SaaS CMS built with a split TypeScript frontend and backend architecture. It includes JWT auth with refresh-token rotation, Redis-backed caching, BullMQ background jobs, analytics dashboards, role-based access control, media uploads, and Docker-based deployment workflows.
+SimpleStack is a headless CMS SaaS for developers and small businesses who want to manage website content without shipping code changes for every update. It combines a React app, an Express API, subscriptions, media management, public content delivery, and a lightweight connect SDK in one monorepo.
 
-## Stack
+## Tech Stack
 
-### Backend
-- Node.js
-- Express 5
-- TypeScript
-- Mongoose
-- MongoDB
-- Redis (`ioredis`)
-- BullMQ
-- Winston
+- Backend: Node.js, Express 5, TypeScript, MongoDB, Mongoose
+- Cache and queues: Redis, BullMQ
+- Frontend: React 18, Vite, TypeScript, Zustand, React Query, React Router
+- Payments: Razorpay
+- Media: Cloudinary
+- Messaging: Resend, MSG91
 
-### Frontend
-- React 18
-- Vite
-- TypeScript
-- React Router v6
-- React Query
-- Zustand
-- React Hook Form
-- Zod
-- Recharts
+## Local Development Setup
 
-### Infra
-- Docker
-- Nginx
-- PM2
-- GitHub Actions
+### Prerequisites
 
-## Features
+- Node.js 20+
+- MongoDB running locally or reachable via connection string
+- Redis running locally on `127.0.0.1:6379`
 
-- Role-based CMS access for `admin`, `editor`, and `viewer`
-- Access-token plus refresh-token auth flow with token-family rotation
-- Content type builder for structured CMS models
-- Entry CRUD with search, pagination, cache, soft-delete, and related-content lookup
-- Media upload pipeline with local storage or S3-backed storage
-- Redis caching for read-heavy entry and analytics endpoints
-- BullMQ queues for analytics and media processing jobs
-- Analytics dashboard with trending content, activity feed, and views-over-time charts
-- Admin user management for role and active-state updates
-- Docker, CI/CD, and PM2 production deployment scaffolding
+### Steps
 
-## Project Structure
-
-```text
-.
-├── backend/
-│   ├── src/
-│   │   ├── config/
-│   │   ├── jobs/
-│   │   ├── lib/
-│   │   ├── middleware/
-│   │   ├── models/
-│   │   ├── modules/
-│   │   ├── routes/
-│   │   ├── services/
-│   │   ├── types/
-│   │   └── utils/
-│   ├── Dockerfile
-│   └── ecosystem.config.js
-├── frontend/
-│   ├── src/
-│   │   ├── components/
-│   │   ├── features/
-│   │   ├── lib/
-│   │   ├── router/
-│   │   ├── schemas/
-│   │   └── types/
-│   ├── Dockerfile
-│   └── nginx.conf
-├── docker-compose.yml
-├── docker-compose.prod.yml
-└── .github/workflows/ci.yml
-```
-
-## Local Development
-
-### 1. Install dependencies
+1. Clone the repository.
+2. Install dependencies:
 
 ```bash
-npm install
+npm run install:all
 ```
 
-### 2. Configure environment files
+3. Review and update local environment files:
 
-Backend:
+- `backend/.env`
+- `frontend/.env`
 
-```bash
-cp backend/.env.example backend/.env.development
-```
-
-Frontend:
-
-```bash
-cp frontend/.env.example frontend/.env
-```
-
-### 3. Start the full stack locally
+4. Start backend and frontend together:
 
 ```bash
 npm run dev
 ```
 
-Frontend runs on `http://localhost:5173` and backend runs on `http://localhost:3000`.
+5. Open the frontend at `http://localhost:5173`.
 
-## Docker
-
-### Development
-
-```bash
-docker compose up
-```
-
-### Production-style compose
-
-```bash
-docker compose -f docker-compose.yml -f docker-compose.prod.yml up
-```
-
-## Scripts
-
-Root:
-
-```bash
-npm run dev
-npm run lint
-npm run type-check
-npm run build
-npm test
-```
-
-Package-level:
-
-```bash
-npm run dev -w backend
-npm run dev -w frontend
-npm run build -w backend
-npm run build -w frontend
-```
+In development, OTP delivery falls back to backend terminal logs when provider keys are not configured, so you can complete register and verify flows locally.
 
 ## Environment Variables
 
-### Backend required
+### Backend
 
-- `NODE_ENV`
-- `PORT`
-- `MONGODB_URI`
-- `REDIS_URL`
-- `JWT_ACCESS_SECRET`
-- `JWT_REFRESH_SECRET`
-- `JWT_ACCESS_EXPIRES`
-- `JWT_REFRESH_EXPIRES`
-- `ALLOWED_ORIGINS`
-- `LOG_LEVEL`
+| Variable | Required | Notes |
+| --- | --- | --- |
+| `NODE_ENV` | Yes | `development`, `test`, or `production` |
+| `PORT` | Yes | Backend port |
+| `LOG_LEVEL` | Yes | `debug`, `info`, `warn`, `error` |
+| `MONGODB_URI` | Yes | MongoDB connection string |
+| `REDIS_URL` | Yes | Local Redis or Upstash `rediss://...` URL |
+| `JWT_ACCESS_SECRET` | Yes | Minimum 32 chars |
+| `JWT_REFRESH_SECRET` | Yes | Minimum 32 chars |
+| `JWT_ACCESS_EXPIRES` | Yes | Example: `15m` |
+| `JWT_REFRESH_EXPIRES` | Yes | Example: `7d` |
+| `RESEND_API_KEY` | Optional | Needed for real email OTP delivery |
+| `MSG91_API_KEY` | Optional | Needed for real SMS OTP delivery |
+| `MSG91_SENDER_ID` | Optional | Needed for MSG91 SMS sender identity |
+| `SUPERADMIN_EMAIL` | Yes | Seeded superadmin email on first boot |
+| `COUPON_CODE` | Yes | Defaults to `SANSKARDEEP` |
+| `RAZORPAY_KEY_ID` | Optional | Needed for live subscription checkout |
+| `RAZORPAY_KEY_SECRET` | Optional | Needed for live subscription checkout |
+| `RAZORPAY_PLAN_ID` | Optional | Razorpay recurring plan ID |
+| `RAZORPAY_WEBHOOK_SECRET` | Optional | Used to verify Razorpay webhooks |
+| `CLOUDINARY_CLOUD_NAME` | Optional | Needed for hosted media uploads |
+| `CLOUDINARY_API_KEY` | Optional | Needed for hosted media uploads |
+| `CLOUDINARY_API_SECRET` | Optional | Needed for hosted media uploads |
+| `ALLOWED_ORIGINS` | Yes | Comma-separated CORS origins |
+| `AWS_S3_BUCKET` | Optional | Reserved for S3-based media/storage use |
+| `AWS_ACCESS_KEY_ID` | Optional | Reserved for S3-based media/storage use |
+| `AWS_SECRET_ACCESS_KEY` | Optional | Reserved for S3-based media/storage use |
+| `AWS_REGION` | Optional | Reserved for S3-based media/storage use |
 
-### Backend optional
+### Frontend
 
-- `AWS_S3_BUCKET`
-- `AWS_ACCESS_KEY_ID`
-- `AWS_SECRET_ACCESS_KEY`
-- `AWS_REGION`
+| Variable | Required | Notes |
+| --- | --- | --- |
+| `VITE_API_BASE_URL` | Yes | Example: `http://localhost:3000/api/v1` |
 
-### Frontend required
+## Admin Access
 
-- `VITE_API_URL`
+On first backend boot, SimpleStack checks whether a `superadmin` user already exists. If none exists, it seeds one automatically using `SUPERADMIN_EMAIL`, marks email as verified, and logs the email in the backend terminal so the founder can use a password reset flow or manually set credentials.
 
-## API Overview
+## Deployment (Render)
 
-All backend routes are mounted under `/api/v1`.
+### Backend
 
-### Main route groups
+- Deploy `backend` as a Render Web Service.
+- Set all backend environment variables in Render.
+- Ensure MongoDB and Redis/Upstash are reachable from the service.
+- Health check path: `/health`
+- A ready-to-import Render blueprint is included at `render.yaml`.
 
-- `/api/v1/auth`
-- `/api/v1/users`
-- `/api/v1/content-types`
-- `/api/v1/entries`
-- `/api/v1/media`
-- `/api/v1/analytics`
+### Frontend
 
-## Deployment Notes
+- Deploy `frontend` as a Static Site.
+- Build with the frontend workspace config used in the repo.
+- Point `VITE_API_BASE_URL` to your deployed backend, for example `https://api.yourdomain.com/api/v1`.
+- If serving the built frontend with Nginx, keep SPA fallback enabled.
+- For Vercel, `frontend/vercel.json` already includes the SPA rewrite to `index.html`.
 
-- Backend health endpoint: `/health`
-- Frontend Nginx config supports SPA routing and `/api/` proxying
-- PM2 config is included at `backend/ecosystem.config.js`
-- GitHub Actions workflow includes test, image build/push, and deploy-hook stages
+## Coupon System
 
-## Verification Completed
+The coupon code `SANSKARDEEP` grants lifetime free access by activating the subscription without an expiry date. Paid subscriptions continue to use the regular Razorpay-backed monthly plan flow.
 
-The current app revision has been verified with:
+## connect.js SDK
 
-- `npm run type-check`
-- `npm run lint`
-- `npm run build -w backend`
-- `npm run build -w frontend`
-- `npm test`
+Embed SimpleStack content on any connected website with:
+
+```html
+<script src="https://cdn.simplestack.in/connect.js" data-project="PROJECT_ID"></script>
+```
+
+The SDK resolves its API base dynamically unless you override it with `data-api-base`.

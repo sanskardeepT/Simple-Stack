@@ -20,17 +20,18 @@ export const helmetMiddleware = helmet({
 });
 
 const allowedMethods = ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"];
+const allowedOrigins = env.ALLOWED_ORIGINS.split(",").map((origin) => origin.trim()).filter(Boolean);
 
 export const corsMiddleware = cors({
   credentials: true,
   methods: allowedMethods,
   origin: (origin, callback) => {
-    if (!origin || env.ALLOWED_ORIGINS.includes(origin)) {
+    if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
       return;
     }
 
-    callback(new Error("CORS: Origin not allowed"));
+    callback(new Error("Not allowed by CORS"));
   },
 });
 

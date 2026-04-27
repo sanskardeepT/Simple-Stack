@@ -1,4 +1,5 @@
 import http from "node:http";
+import { randomUUID } from "node:crypto";
 import mongoose from "mongoose";
 import { createApp } from "./app.js";
 import { connectDB } from "./config/db.js";
@@ -8,6 +9,24 @@ import { closeQueues, startWorkers } from "./jobs/queue.js";
 import { logger } from "./lib/logger.js";
 
 let server: http.Server | null = null;
+
+async function seedSuperAdmin(): Promise<void> {
+  const { UserModel } = await import("./models/User.js");
+  const exists = await UserModel.findOne({ role: "superadmin" }).lean().exec();
+
+  if (!exists) {
+    await UserModel.create({
+      name: "Super Admin",
+      email: env.SUPERADMIN_EMAIL,
+      phone: "+910000000000",
+      passwordHash: randomUUID(),
+      emailVerified: true,
+      phoneVerified: false,
+      role: "superadmin",
+    });
+    logger.info(`Superadmin created → ${env.SUPERADMIN_EMAIL}`);
+  }
+}
 
 async function shutdown(signal: string): Promise<void> {
   logger.warn("Starting graceful shutdown", { signal });
@@ -29,6 +48,7 @@ async function shutdown(signal: string): Promise<void> {
 
 async function bootstrap(): Promise<void> {
   await connectDB();
+  await seedSuperAdmin();
   await redis.ping();
   await startWorkers();
 

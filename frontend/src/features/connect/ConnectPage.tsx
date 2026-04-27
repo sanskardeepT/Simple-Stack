@@ -4,7 +4,8 @@ import { getApiError } from "../../lib/api/client.js";
 import { useEnsureDefaultProject, useProjects, useUpdateWebhook } from "./useProjects.js";
 
 export function ConnectPage() {
-  const apiBase = (import.meta.env.VITE_API_URL as string | undefined) ?? window.location.origin;
+  const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? "http://localhost:3000/api/v1";
+  const apiOrigin = apiBaseUrl.replace(/\/api\/v1\/?$/, "");
   const projects = useProjects();
   const ensureDefault = useEnsureDefaultProject();
   const updateWebhook = useUpdateWebhook();
@@ -40,10 +41,10 @@ export function ConnectPage() {
     }
   }
 
-  const embedSnippet = project ? `<script src="${window.location.origin}/connect.js" data-project="${project.projectId}" data-api-key="${project.apiKey}" data-api-base="${apiBase}/api/v1"></script>` : `<script src="https://cdn.simplestack.in/connect.js" data-project="PROJECT_ID"></script>`;
-  const contentTypesEndpoint = project ? `${apiBase}/api/v1/public/${project.projectId}/content-types?apiKey=${project.apiKey}` : "";
-  const entriesEndpoint = project ? `${apiBase}/api/v1/public/${project.projectId}/entries/menu-items?apiKey=${project.apiKey}` : "";
-  const heartbeatEndpoint = project ? `${apiBase}/api/v1/public/${project.projectId}/heartbeat` : "";
+  const embedSnippet = project ? `<script src="${window.location.origin}/connect.js" data-project="${project.projectId}" data-api-key="${project.apiKey}" data-api-base="${apiBaseUrl}"></script>` : `<script src="https://cdn.simplestack.in/connect.js" data-project="PROJECT_ID"></script>`;
+  const contentTypesEndpoint = project ? `${apiOrigin}/api/v1/public/${project.projectId}/content-types?apiKey=${project.apiKey}` : "";
+  const entriesEndpoint = project ? `${apiOrigin}/api/v1/public/${project.projectId}/entries/menu-items?apiKey=${project.apiKey}` : "";
+  const heartbeatEndpoint = project ? `${apiOrigin}/api/v1/public/${project.projectId}/heartbeat` : "";
 
   return (
     <div className="stack-lg">

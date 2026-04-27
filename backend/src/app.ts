@@ -1,7 +1,5 @@
 import cookieParser from "cookie-parser";
 import express from "express";
-import mongoose from "mongoose";
-import { redis } from "./config/redis.js";
 import { ApiError } from "./lib/errors.js";
 import { errorHandler } from "./middleware/error-handler.js";
 import { requestLogger } from "./middleware/request-logger.js";
@@ -12,6 +10,9 @@ import { v1Routes } from "./routes/v1.js";
 export function createApp() {
   const app = express();
 
+  app.get("/health", (_req, res) => {
+    res.json({ status: "ok", ts: Date.now() });
+  });
   app.use(requestLogger);
   app.use(helmetMiddleware);
   app.use(corsMiddleware);
@@ -21,25 +22,6 @@ export function createApp() {
   app.use(cookieParser());
   app.use(globalRateLimit);
   app.use("/api/v1", v1Routes);
-  app.get("/health", async (_req, res) => {
-    let redisStatus = "ok";
-    let dbStatus = "connected";
-    try {
-      await redis.ping();
-    } catch {
-      redisStatus = "error";
-    }
-    if (mongoose.connection.readyState !== 1) {
-      dbStatus = "disconnected";
-    }
-    res.status(200).json({
-      status: "ok",
-      db: dbStatus,
-      redis: redisStatus,
-      uptime: process.uptime(),
-      timestamp: new Date().toISOString(),
-    });
-  });
   app.use((_req, _res, next) => {
     next(new ApiError(404, "NOT_FOUND", "Route not found"));
   });

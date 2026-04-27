@@ -9,7 +9,7 @@
     return;
   }
 
-  apiBase = apiBase || "https://api.simplestack.in/api/v1";
+  apiBase = apiBase || (window.location.origin + "/api/v1");
 
   function request(path, options) {
     var url = apiBase + "/public/" + projectId + path;
