@@ -1,9 +1,11 @@
 import { useAuthStore } from "../../lib/store/auth.store.js";
 import { useAnalyticsDashboard } from "../analytics/useAnalytics.js";
+import { useSubscriptionStatus } from "../subscription/useSubscription.js";
 
 export function DashboardPage() {
   const user = useAuthStore((s) => s.user);
   const stats = useAnalyticsDashboard("7d");
+  const subscription = useSubscriptionStatus();
 
   const data = stats.data ?? { totalUsers: 0, totalEntries: 0, totalViews: 0, activeUsers: 0 };
 
@@ -35,14 +37,21 @@ export function DashboardPage() {
         ))}
       </div>
 
+      {subscription.data?.status !== "active" && (
+        <div className="alert alert-error row" style={{ justifyContent: "space-between" }}>
+          <span>Your plan is inactive. Subscribe or apply your coupon to unlock SimpleStack.</span>
+          <a className="btn btn-primary btn-sm" href="/app/billing">Open billing</a>
+        </div>
+      )}
+
       <div className="grid-2">
         <div className="panel stack">
           <div className="section-title">Quick Actions</div>
           <div className="stack-sm">
             {[
-              { icon: "✦", label: "Create new content", href: "/entries" },
-              { icon: "◈", label: "Upload a file", href: "/media" },
-              { icon: "⟳", label: "Connect your website", href: "/connect" },
+              { icon: "✦", label: "Create new content", href: "/app/entries" },
+              { icon: "◈", label: "Upload a file", href: "/app/media" },
+              { icon: "⟳", label: "Connect your website", href: "/app/connect" },
             ].map((action) => (
               <a
                 key={action.href}

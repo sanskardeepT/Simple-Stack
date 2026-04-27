@@ -1,10 +1,27 @@
-import { useState } from "react";
-import { useAuthStore } from "../../lib/store/auth.store.js";
+import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
+import { getApiError } from "../../lib/api/client.js";
+import { useEnsureDefaultProject, useProjects, useUpdateWebhook } from "./useProjects.js";
 
 export function ConnectPage() {
-  useAuthStore((s) => s.user);
   const apiBase = (import.meta.env.VITE_API_URL as string | undefined) ?? window.location.origin;
+  const projects = useProjects();
+  const ensureDefault = useEnsureDefaultProject();
+  const updateWebhook = useUpdateWebhook();
   const [copied, setCopied] = useState<string | null>(null);
+  const [webhookUrl, setWebhookUrl] = useState("");
+
+  const project = projects.data?.[0];
+
+  useEffect(() => {
+    if (!project && !projects.isPending && !ensureDefault.isPending) {
+      ensureDefault.mutate();
+    }
+  }, [ensureDefault, project, projects.isPending]);
+
+  useEffect(() => {
+    setWebhookUrl(project?.webhookUrl ?? "");
+  }, [project?.webhookUrl]);
 
   function copy(text: string, key: string) {
     navigator.clipboard.writeText(text).then(() => {
@@ -13,136 +30,81 @@ export function ConnectPage() {
     }).catch(() => undefined);
   }
 
-  const snippets = {
-    fetch: `// Paste this in your website's JavaScript
-const CMS_URL = "${apiBase}/api/v1";
+  async function saveWebhook() {
+    if (!project) return;
+    try {
+      await updateWebhook.mutateAsync({ projectId: project.projectId, webhookUrl });
+      toast.success("Webhook saved");
+    } catch (error) {
+      toast.error(getApiError(error));
+    }
+  }
 
-async function getContent(contentTypeId) {
-  const response = await fetch(
-    CMS_URL + "/entries?contentTypeId=" + contentTypeId + "&status=published"
-  );
-  const data = await response.json();
-  return data.data; // Array of content entries
-}
-
-// Example: Show blog posts
-getContent("YOUR_CONTENT_TYPE_ID").then(posts => {
-  posts.forEach(post => {
-    console.log(post.title, post.fields);
-  });
-});`,
-
-    wordpress: `// Add to your theme's functions.php
-function simplestack_get_content($content_type_id) {
-  $url = "${apiBase}/api/v1/entries?contentTypeId=" . $content_type_id . "&status=published";
-  $response = wp_remote_get($url);
-  if (is_wp_error($response)) return [];
-  $body = wp_remote_retrieve_body($response);
-  $data = json_decode($body, true);
-  return $data['data'] ?? [];
-}`,
-
-    nextjs: `// pages/blog.js or app/blog/page.jsx
-export async function getStaticProps() {
-  const res = await fetch(
-    "${apiBase}/api/v1/entries?status=published&contentTypeId=YOUR_TYPE_ID"
-  );
-  const data = await res.json();
-  return { props: { posts: data.data }, revalidate: 60 };
-}`,
-  };
-
-  const steps = [
-    {
-      num: "1",
-      title: "Create a Content Type",
-      desc: 'Go to "Content Types" and create a type like "Blog Post" with fields: title (text), body (richtext), image (media).',
-      href: "/content-types",
-      cta: "Go to Content Types →",
-    },
-    {
-      num: "2",
-      title: "Add your content",
-      desc: 'Go to "Content" and add entries. Set status to "Published" so they appear on your website.',
-      href: "/entries",
-      cta: "Go to Content →",
-    },
-    {
-      num: "3",
-      title: "Copy the code snippet",
-      desc: "Pick the snippet below that matches your website platform and paste it into your site.",
-      href: null,
-      cta: null,
-    },
-  ];
+  const embedSnippet = project ? `<script src="${window.location.origin}/connect.js" data-project="${project.projectId}" data-api-key="${project.apiKey}" data-api-base="${apiBase}/api/v1"></script>` : `<script src="https://cdn.simplestack.in/connect.js" data-project="PROJECT_ID"></script>`;
+  const contentTypesEndpoint = project ? `${apiBase}/api/v1/public/${project.projectId}/content-types?apiKey=${project.apiKey}` : "";
+  const entriesEndpoint = project ? `${apiBase}/api/v1/public/${project.projectId}/entries/menu-items?apiKey=${project.apiKey}` : "";
+  const heartbeatEndpoint = project ? `${apiBase}/api/v1/public/${project.projectId}/heartbeat` : "";
 
   return (
     <div className="stack-lg">
       <div className="page-header">
         <div>
-          <div className="page-title">Connect Your Website</div>
-          <div className="page-subtitle">3 simple steps to show your CMS content on your website.</div>
+          <div className="page-title">Connect your website</div>
+          <div className="page-subtitle">Use one script tag or call the public API directly.</div>
         </div>
       </div>
 
       <div className="connect-card stack">
-        <div className="section-title">Your API Endpoint</div>
-        <div className="muted text-sm" style={{ marginBottom: 4 }}>
-          This is your personal CMS API URL. Your website fetches content from here.
+        <div className="row" style={{ justifyContent: "space-between" }}>
+          <div>
+            <div className="section-title">Project connection</div>
+            <div className="muted text-sm">Each website gets a project ID and API key.</div>
+          </div>
+          <span className={`badge ${project?.connected ? "badge-green" : "badge-yellow"}`}>
+            {project?.connected ? "Connected in last 24h" : "Waiting for website"}
+          </span>
         </div>
-        <div className="connect-url-row">
-          <span style={{ flex: 1 }}>{apiBase}/api/v1/entries</span>
-          <button className="btn btn-secondary btn-sm" onClick={() => copy(`${apiBase}/api/v1/entries`, "url")}>
-            {copied === "url" ? "✓ Copied!" : "Copy"}
+        <div className="grid-2">
+          <div className="panel stack-sm">
+            <div className="field-label">Project ID</div>
+            <div className="code-chip">{project?.projectId ?? "Creating..."}</div>
+          </div>
+          <div className="panel stack-sm">
+            <div className="field-label">API key</div>
+            <div className="code-chip">{project?.apiKey ? `${project.apiKey.slice(0, 16)}...` : "Creating..."}</div>
+          </div>
+        </div>
+      </div>
+
+      <div className="panel stack-sm">
+        <div className="row" style={{ justifyContent: "space-between" }}>
+          <div>
+            <div className="section-title">1-line embed script</div>
+            <div className="muted text-sm">Paste this before the closing body tag on your website.</div>
+          </div>
+          <button className="btn btn-secondary btn-sm" onClick={() => copy(embedSnippet, "embed")}>
+            {copied === "embed" ? "Copied" : "Copy"}
           </button>
         </div>
+        <pre className="code-block"><code>{embedSnippet}</code></pre>
       </div>
 
-      <div className="stack">
-        <div className="section-title">How to connect — 3 steps</div>
-        <div className="grid-3">
-          {steps.map((step) => (
-            <div key={step.num} className="panel stack-sm">
-              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
-                <div style={{ width: 28, height: 28, borderRadius: "50%", background: "var(--accent-glow)", border: "1px solid var(--border-strong)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, color: "var(--accent)", fontSize: 13 }}>
-                  {step.num}
-                </div>
-                <div style={{ fontWeight: 600, fontSize: 15 }}>{step.title}</div>
-              </div>
-              <div className="muted text-sm">{step.desc}</div>
-              {step.href && (
-                <a href={step.href} className="btn btn-secondary btn-sm" style={{ alignSelf: "flex-start", marginTop: 4 }}>{step.cta}</a>
-              )}
-            </div>
-          ))}
+      <div className="grid-2">
+        <div className="panel stack-sm">
+          <div className="section-title">Public API endpoints</div>
+          <div className="field-label">Content structures</div>
+          <div className="connect-url-row"><span style={{ flex: 1 }}>{contentTypesEndpoint}</span><button className="btn btn-secondary btn-sm" onClick={() => copy(contentTypesEndpoint, "types")}>Copy</button></div>
+          <div className="field-label">Published items by slug</div>
+          <div className="connect-url-row"><span style={{ flex: 1 }}>{entriesEndpoint}</span><button className="btn btn-secondary btn-sm" onClick={() => copy(entriesEndpoint, "entries")}>Copy</button></div>
         </div>
-      </div>
 
-      <div className="stack">
-        <div className="section-title">Code Snippets — Pick your platform</div>
-        {(["fetch", "nextjs", "wordpress"] as const).map((key) => {
-          const labels = { fetch: "Any Website (Vanilla JS)", nextjs: "Next.js / React", wordpress: "WordPress (PHP)" };
-          return (
-            <div key={key} className="panel stack-sm">
-              <div className="row" style={{ justifyContent: "space-between" }}>
-                <div style={{ fontWeight: 600 }}>{labels[key]}</div>
-                <button className="btn btn-secondary btn-sm" onClick={() => copy(snippets[key], key)}>
-                  {copied === key ? "✓ Copied!" : "Copy code"}
-                </button>
-              </div>
-              <pre style={{ background: "var(--bg)", border: "1px solid var(--border)", borderRadius: "var(--radius-sm)", padding: "16px", fontSize: 12, lineHeight: 1.6, overflowX: "auto", color: "var(--text-2)", margin: 0 }}>
-                <code>{snippets[key]}</code>
-              </pre>
-            </div>
-          );
-        })}
-      </div>
-
-      <div className="panel stack-sm" style={{ background: "rgba(104,211,145,0.04)", borderColor: "rgba(104,211,145,0.2)" }}>
-        <div style={{ fontWeight: 600, color: "var(--success)" }}>✓ Your API is live and ready</div>
-        <div className="muted text-sm">
-          Any published content you create will instantly appear at your API endpoint. No rebuild needed.
-          Changes you make in this CMS reflect on your website within seconds.
+        <div className="panel stack-sm">
+          <div className="section-title">Webhook refresh</div>
+          <div className="muted text-sm">Add your website refresh URL. Publishing content will use this in the next step.</div>
+          <input className="field-input" placeholder="https://your-site.com/api/refresh" value={webhookUrl} onChange={(event) => setWebhookUrl(event.target.value)} />
+          <button className="btn btn-primary btn-sm" disabled={!project || updateWebhook.isPending} onClick={saveWebhook}>Save webhook</button>
+          <div className="field-label">Heartbeat URL</div>
+          <div className="connect-url-row"><span style={{ flex: 1 }}>{heartbeatEndpoint}</span><button className="btn btn-secondary btn-sm" onClick={() => copy(heartbeatEndpoint, "heartbeat")}>Copy</button></div>
         </div>
       </div>
     </div>

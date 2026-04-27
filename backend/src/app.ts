@@ -6,6 +6,7 @@ import { ApiError } from "./lib/errors.js";
 import { errorHandler } from "./middleware/error-handler.js";
 import { requestLogger } from "./middleware/request-logger.js";
 import { corsMiddleware, globalRateLimit, helmetMiddleware } from "./middleware/security.js";
+import { subscriptionWebhookRoutes } from "./modules/subscriptions/subscription-webhook.routes.js";
 import { v1Routes } from "./routes/v1.js";
 
 export function createApp() {
@@ -14,6 +15,7 @@ export function createApp() {
   app.use(requestLogger);
   app.use(helmetMiddleware);
   app.use(corsMiddleware);
+  app.use("/api/v1/subscriptions/webhook", express.raw({ type: "application/json" }), subscriptionWebhookRoutes);
   app.use(express.json({ limit: "10mb" }));
   app.use(express.urlencoded({ extended: true }));
   app.use(cookieParser());

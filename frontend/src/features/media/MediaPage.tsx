@@ -1,12 +1,11 @@
 import { useRef, useState } from "react";
+import toast from "react-hot-toast";
 import { Pagination } from "../../components/ui/Pagination.js";
 import { useCreateMedia, useDeleteMedia, useMedia } from "./useMedia.js";
 
 function fileIcon(mime: string) {
   if (mime.startsWith("image/")) return null;
-  if (mime.includes("pdf")) return "📄";
-  if (mime.includes("word")) return "📝";
-  return "📎";
+  return "◈";
 }
 
 function formatSize(bytes: number) {
@@ -39,7 +38,7 @@ export function MediaPage() {
       <div className="page-header">
         <div>
           <div className="page-title">Media Library</div>
-          <div className="page-subtitle">Images, PDFs, and documents you&apos;ve uploaded.</div>
+          <div className="page-subtitle">Images you can use in your content. Upload once, reuse anywhere.</div>
         </div>
         <button className="btn btn-primary" onClick={() => inputRef.current?.click()}>+ Upload File</button>
       </div>
@@ -62,14 +61,14 @@ export function MediaPage() {
       >
         <div style={{ fontSize: 32, marginBottom: 8 }}>◈</div>
         <div style={{ fontWeight: 600, marginBottom: 4 }}>Drop files here or click to upload</div>
-        <div className="muted text-sm">Images (JPG, PNG, WebP, GIF), PDFs, and Word docs up to 10MB</div>
+        <div className="muted text-sm">JPG, PNG, WebP, and GIF images up to 10MB. Cloudinary is used when configured.</div>
       </div>
 
       <input
         ref={inputRef}
         type="file"
         multiple
-        accept="image/*,.pdf,.doc,.docx"
+        accept="image/*"
         style={{ display: "none" }}
         onChange={(e) => handleFiles(e.target.files)}
       />
@@ -98,6 +97,16 @@ export function MediaPage() {
               <div className="media-card-info">
                 <div className="media-card-name">{String(file.originalName ?? file.filename)}</div>
                 <div className="media-card-size">{formatSize(Number(file.size ?? 0))}</div>
+                <button
+                  className="btn btn-secondary btn-sm"
+                  style={{ marginTop: 6, width: "100%" }}
+                  onClick={() => {
+                    void navigator.clipboard.writeText(String(file.url));
+                    toast.success("Image URL copied");
+                  }}
+                >
+                  Copy URL
+                </button>
                 <button
                   className="btn btn-danger btn-sm"
                   style={{ marginTop: 6, width: "100%" }}

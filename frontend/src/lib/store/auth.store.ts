@@ -4,7 +4,16 @@ export type AuthUser = {
   _id: string;
   name: string;
   email: string;
-  role: "admin" | "editor" | "viewer";
+  phone: string;
+  emailVerified: boolean;
+  phoneVerified: boolean;
+  role: "superadmin" | "user";
+  subscription?: {
+    status: "inactive" | "active" | "expired" | "cancelled";
+    plan: "none" | "paid" | "coupon" | "free_trial";
+    expiry: string | null;
+    coupon: string;
+  };
 };
 
 type AuthState = {

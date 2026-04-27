@@ -4,7 +4,17 @@ import toast from "react-hot-toast";
 import { api } from "../../lib/api/client.js";
 import { contentTypeKeys, useContentTypes } from "./useContentTypes.js";
 
-const FIELD_TYPES = ["text", "richtext", "number", "boolean", "date", "media", "relation", "json"] as const;
+const FIELD_TYPES = ["text", "richText", "number", "boolean", "image", "date", "select"] as const;
+
+const FIELD_LABELS: Record<typeof FIELD_TYPES[number], string> = {
+  text: "Short text",
+  richText: "Long text",
+  number: "Number",
+  boolean: "Yes / No",
+  image: "Image",
+  date: "Date",
+  select: "Dropdown",
+};
 
 export function ContentTypesPage() {
   const [page] = useState(1);
@@ -13,12 +23,12 @@ export function ContentTypesPage() {
   const [showCreate, setShowCreate] = useState(false);
   const [name, setName] = useState("");
   const [desc, setDesc] = useState("");
-  const [fields, setFields] = useState([{ name: "", type: "text" as typeof FIELD_TYPES[number], required: false }]);
+  const [fields, setFields] = useState([{ name: "", type: "text" as typeof FIELD_TYPES[number], required: false, options: "" }]);
   const [saving, setSaving] = useState(false);
 
   const types = (query.data?.data ?? []) as Array<Record<string, unknown>>;
 
-  function addField() { setFields((f) => [...f, { name: "", type: "text", required: false }]); }
+  function addField() { setFields((f) => [...f, { name: "", type: "text", required: false, options: "" }]); }
   function removeField(i: number) { setFields((f) => f.filter((_, idx) => idx !== i)); }
   function updateField(i: number, key: string, value: unknown) {
     setFields((f) => f.map((field, idx) => idx === i ? { ...field, [key]: value } : field));
@@ -28,12 +38,21 @@ export function ContentTypesPage() {
     if (!name || fields.some((f) => !f.name)) { toast.error("Fill in all field names"); return; }
     setSaving(true);
     try {
-      await api.post("/content-types", { name, description: desc, fields });
+    await api.post("/content-types", {
+      name,
+      description: desc,
+      fields: fields.map((field) => ({
+        name: field.name,
+        type: field.type,
+        required: field.required,
+        ...(field.type === "select" ? { options: field.options.split(",").map((item) => item.trim()).filter(Boolean) } : {}),
+      })),
+    });
       qc.invalidateQueries({ queryKey: contentTypeKeys.all });
       setShowCreate(false);
       setName("");
       setDesc("");
-      setFields([{ name: "", type: "text", required: false }]);
+      setFields([{ name: "", type: "text", required: false, options: "" }]);
       toast.success("Content type created!");
     } catch {
       toast.error("Failed to create. Try again.");
@@ -44,8 +63,8 @@ export function ContentTypesPage() {
     <div className="stack-lg">
       <div className="page-header">
         <div>
-          <div className="page-title">Content Types</div>
-          <div className="page-subtitle">Define the structure of your content — like &quot;Blog Post&quot; or &quot;Product&quot;.</div>
+          <div className="page-title">What kind of content?</div>
+          <div className="page-subtitle">Create reusable shapes like Menu Items, Blog Posts, Products, or FAQs.</div>
         </div>
         <button className="btn btn-primary" onClick={() => setShowCreate(true)}>+ New Type</button>
       </div>
@@ -53,8 +72,8 @@ export function ContentTypesPage() {
       {types.length === 0 && !query.isPending ? (
         <div className="empty-state">
           <div className="empty-state-icon">⊞</div>
-          <div className="empty-state-title">No content types yet</div>
-          <div className="empty-state-desc">A content type defines what fields your content has. E.g. a &quot;Blog Post&quot; has a Title, Body, and Image.</div>
+          <div className="empty-state-title">No content structure yet</div>
+          <div className="empty-state-desc">Start with a shape like Menu Item: title, price, description, image, category.</div>
         </div>
       ) : (
         <div className="grid-2">
@@ -66,7 +85,7 @@ export function ContentTypesPage() {
                 {typeof ct.description === "string" && ct.description && <div className="muted text-sm">{ct.description}</div>}
                 <div className="row" style={{ flexWrap: "wrap", marginTop: 4 }}>
                   {fieldList.map((f) => (
-                    <span key={f.name} className="code-chip">{f.name}: {f.type}</span>
+                    <span key={f.name} className="code-chip">{f.name}: {FIELD_LABELS[f.type as typeof FIELD_TYPES[number]] ?? f.type}</span>
                   ))}
                 </div>
               </div>
@@ -79,7 +98,7 @@ export function ContentTypesPage() {
         <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setShowCreate(false); }}>
           <div className="modal stack">
             <div className="modal-header">
-              <div className="modal-title">New Content Type</div>
+              <div className="modal-title">New content structure</div>
               <button className="modal-close" onClick={() => setShowCreate(false)}>✕</button>
             </div>
             <div className="field">
@@ -96,8 +115,8 @@ export function ContentTypesPage() {
                 {fields.map((field, i) => (
                   <div key={i} className="row">
                     <input className="field-input" style={{ flex: 1 }} placeholder="Field name (e.g. title)" value={field.name} onChange={(e) => updateField(i, "name", e.target.value)} />
-                    <select className="field-input" style={{ width: 120 }} value={field.type} onChange={(e) => updateField(i, "type", e.target.value)}>
-                      {FIELD_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
+                    <select className="field-input" style={{ width: 140 }} value={field.type} onChange={(e) => updateField(i, "type", e.target.value)}>
+                      {FIELD_TYPES.map((t) => <option key={t} value={t}>{FIELD_LABELS[t]}</option>)}
                     </select>
                     <label className="row" style={{ gap: 4, fontSize: 13, color: "var(--text-2)", cursor: "pointer" }}>
                       <input type="checkbox" checked={field.required} onChange={(e) => updateField(i, "required", e.target.checked)} />
@@ -105,6 +124,15 @@ export function ContentTypesPage() {
                     </label>
                     {fields.length > 1 && (
                       <button className="btn btn-ghost btn-icon" onClick={() => removeField(i)}>✕</button>
+                    )}
+                    {field.type === "select" && (
+                      <input
+                        className="field-input"
+                        style={{ flexBasis: "100%" }}
+                        placeholder="Dropdown choices, comma separated: Starters, Main Course, Drinks"
+                        value={field.options}
+                        onChange={(e) => updateField(i, "options", e.target.value)}
+                      />
                     )}
                   </div>
                 ))}

@@ -5,7 +5,7 @@ import { ApiError } from "../lib/errors.js";
 
 type JwtPayload = {
   userId: string;
-  role: "admin" | "editor" | "viewer";
+  role: "superadmin" | "user";
   email: string;
 };
 

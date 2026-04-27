@@ -5,10 +5,16 @@ import { entryService } from "./entry.service.js";
 
 export const entryController = {
   async list(req: Request, res: Response): Promise<Response> {
-    return paginated(res, await entryService.listEntries(req.query as Record<string, unknown>));
+    if (!req.user) {
+      throw new ApiError(401, "UNAUTHORIZED", "Authentication required");
+    }
+    return paginated(res, await entryService.listEntries(req.query as Record<string, unknown>, req.user));
   },
   async getOne(req: Request, res: Response): Promise<Response> {
-    return ok(res, await entryService.getEntry(String(req.params.id)));
+    if (!req.user) {
+      throw new ApiError(401, "UNAUTHORIZED", "Authentication required");
+    }
+    return ok(res, await entryService.getEntry(String(req.params.id), req.user));
   },
   async create(req: Request, res: Response): Promise<Response> {
     if (!req.user) {
@@ -30,7 +36,10 @@ export const entryController = {
     return noContent(res);
   },
   async related(req: Request, res: Response): Promise<Response> {
-    return ok(res, await entryService.getSimilarEntries(String(req.params.id)));
+    if (!req.user) {
+      throw new ApiError(401, "UNAUTHORIZED", "Authentication required");
+    }
+    return ok(res, await entryService.getSimilarEntries(String(req.params.id), req.user));
   },
   async trackView(req: Request, res: Response): Promise<Response> {
     return ok(

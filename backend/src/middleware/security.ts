@@ -49,6 +49,13 @@ export const authRateLimit = rateLimit({
   legacyHeaders: false,
 });
 
+export const otpRateLimit = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  limit: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 export const apiRateLimit = rateLimit({
   windowMs: 15 * 60 * 1000,
   limit: 200,

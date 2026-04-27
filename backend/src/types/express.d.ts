@@ -4,7 +4,7 @@ declare global {
       requestId?: string;
       user?: {
         userId: string;
-        role: "admin" | "editor" | "viewer";
+        role: "superadmin" | "user";
         email: string;
       };
     }

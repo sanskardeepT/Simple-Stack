@@ -22,10 +22,9 @@ const ALL_PERMISSIONS: Permission[] = [
   "analytics:read",
 ];
 
-export const ROLE_PERMISSIONS: Record<"admin" | "editor" | "viewer", Permission[]> = {
-  admin: ALL_PERMISSIONS,
-  editor: ["content:read", "content:write", "media:upload", "analytics:read"],
-  viewer: ["content:read", "analytics:read"],
+export const ROLE_PERMISSIONS: Record<"superadmin" | "user", Permission[]> = {
+  superadmin: ALL_PERMISSIONS,
+  user: ["content:read", "content:write", "content:delete", "media:upload", "media:delete", "settings:manage", "analytics:read"],
 };
 
 export function authorize(...perms: Permission[]) {

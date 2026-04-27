@@ -8,6 +8,7 @@ export type EntryInput = {
   title: string;
   slug?: string;
   status?: string;
+  contentTypeId?: string;
   fields?: Record<string, unknown>;
 };
 

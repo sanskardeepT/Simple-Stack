@@ -6,6 +6,7 @@ const entrySchema = new Schema(
     slug: { type: String, required: true, trim: true },
     status: { type: String, enum: ["draft", "published", "archived"], default: "draft" },
     contentTypeId: { type: Types.ObjectId, ref: "ContentType", required: true },
+    projectRef: { type: Types.ObjectId, ref: "Project", default: null },
     fields: { type: Map, of: Schema.Types.Mixed, default: {} },
     publishedAt: { type: Date },
     createdBy: { type: Types.ObjectId, ref: "User", required: true },
@@ -19,6 +20,7 @@ const entrySchema = new Schema(
 );
 
 entrySchema.index({ contentTypeId: 1, status: 1, createdAt: -1 });
+entrySchema.index({ projectRef: 1, status: 1, updatedAt: -1 });
 entrySchema.index({ slug: 1, contentTypeId: 1 }, { unique: true });
 entrySchema.index({ title: "text", tags: "text" });
 entrySchema.index({ tags: 1 });

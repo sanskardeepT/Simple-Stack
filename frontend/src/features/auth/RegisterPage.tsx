@@ -8,6 +8,7 @@ import { useRegister } from "./useAuth.js";
 const schema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   email: z.string().email("Enter a valid email"),
+  phone: z.string().regex(/^\+?[1-9]\d{9,14}$/, "Use a valid mobile number with country code"),
   password: z.string().min(8).regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).+$/, "Use upper, lower, number, and special char"),
 });
 type F = z.infer<typeof schema>;
@@ -18,7 +19,7 @@ export function RegisterPage() {
   const reg = useRegister();
   const { register, handleSubmit, formState: { errors } } = useForm<F>({ resolver: zodResolver(schema) });
 
-  if (isAuthenticated) return <Navigate replace to="/" />;
+  if (isAuthenticated) return <Navigate replace to="/app" />;
 
   return (
     <div className="login-shell">
@@ -35,7 +36,10 @@ export function RegisterPage() {
           </div>
         )}
 
-        <form className="stack" onSubmit={handleSubmit(async (v) => { await reg.mutateAsync(v); navigate("/", { replace: true }); })}>
+        <form className="stack" onSubmit={handleSubmit(async (v) => {
+          await reg.mutateAsync(v);
+          navigate(`/verify?email=${encodeURIComponent(v.email)}`, { replace: true });
+        })}>
           <div className="field">
             <label className="field-label">Your name</label>
             <input className="field-input" placeholder="Jane Smith" {...register("name")} />
@@ -45,6 +49,11 @@ export function RegisterPage() {
             <label className="field-label">Email address</label>
             <input className="field-input" type="email" placeholder="you@example.com" {...register("email")} />
             {errors.email && <span className="field-error">{errors.email.message}</span>}
+          </div>
+          <div className="field">
+            <label className="field-label">Mobile number</label>
+            <input className="field-input" placeholder="+919876543210" {...register("phone")} />
+            {errors.phone && <span className="field-error">{errors.phone.message}</span>}
           </div>
           <div className="field">
             <label className="field-label">Password</label>

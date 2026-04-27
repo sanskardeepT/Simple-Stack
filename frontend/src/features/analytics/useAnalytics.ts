@@ -16,6 +16,12 @@ export function useAnalyticsDashboard(range: "7d" | "30d" | "90d") {
         totalEntries: number;
         totalViews: number;
         activeUsers: number;
+        activeSubscribers: number;
+        paidSubscribers: number;
+        couponSubscribers: number;
+        mrr: number;
+        totalSitesConnected: number;
+        liveSites: number;
         viewsByDay: Array<{ _id: string; count: number }>;
         topEntries: Array<{ title: string; viewCount: number }>;
       };

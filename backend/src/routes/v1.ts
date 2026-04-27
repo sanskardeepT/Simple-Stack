@@ -4,15 +4,21 @@ import { authRoutes } from "../modules/auth/auth.routes.js";
 import { contentTypesRoutes } from "../modules/content-types/content-types.routes.js";
 import { entryRoutes } from "../modules/entries/entry.routes.js";
 import { mediaRoutes } from "../modules/media/media.routes.js";
+import { projectsRoutes } from "../modules/projects/projects.routes.js";
+import { publicRoutes } from "../modules/public/public.routes.js";
+import { subscriptionRoutes } from "../modules/subscriptions/subscription.routes.js";
 import { usersRoutes } from "../modules/users/users.routes.js";
 
 const router = Router();
 
 router.use("/auth", authRoutes);
+router.use("/subscriptions", subscriptionRoutes);
 router.use("/users", usersRoutes);
+router.use("/projects", projectsRoutes);
 router.use("/content-types", contentTypesRoutes);
 router.use("/entries", entryRoutes);
 router.use("/media", mediaRoutes);
 router.use("/analytics", analyticsRoutes);
+router.use("/public", publicRoutes);
 
 export const v1Routes = router;

@@ -5,10 +5,16 @@ import { mediaService } from "./media.service.js";
 
 export const mediaController = {
   async list(req: Request, res: Response): Promise<Response> {
-    return paginated(res, await mediaService.list(req.query as Record<string, unknown>));
+    if (!req.user) {
+      throw new ApiError(401, "UNAUTHORIZED", "Authentication required");
+    }
+    return paginated(res, await mediaService.list(req.query as Record<string, unknown>, req.user));
   },
   async getOne(req: Request, res: Response): Promise<Response> {
-    return ok(res, await mediaService.getOne(String(req.params.id)));
+    if (!req.user) {
+      throw new ApiError(401, "UNAUTHORIZED", "Authentication required");
+    }
+    return ok(res, await mediaService.getOne(String(req.params.id), req.user));
   },
   async create(req: Request, res: Response): Promise<Response> {
     if (!req.user) {
@@ -17,7 +23,10 @@ export const mediaController = {
     return created(res, await mediaService.create(req.file, req.body, req.user.userId));
   },
   async remove(req: Request, res: Response): Promise<Response> {
-    await mediaService.remove(String(req.params.id));
+    if (!req.user) {
+      throw new ApiError(401, "UNAUTHORIZED", "Authentication required");
+    }
+    await mediaService.remove(String(req.params.id), req.user);
     return noContent(res);
   },
 };

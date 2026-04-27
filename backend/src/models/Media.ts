@@ -8,7 +8,9 @@ const mediaSchema = new Schema(
     size: { type: Number, required: true, min: 0 },
     url: { type: String, required: true, trim: true },
     storageKey: { type: String, required: true, trim: true },
+    publicId: { type: String, trim: true, default: "" },
     uploadedBy: { type: Types.ObjectId, ref: "User", required: true },
+    projectRef: { type: Types.ObjectId, ref: "Project", default: null },
     folder: { type: String, trim: true, default: "root", maxlength: 120 },
     alt: { type: String, trim: true, default: "", maxlength: 180 },
     status: { type: String, enum: ["uploaded", "processing", "ready", "failed"], default: "uploaded" },
@@ -20,6 +22,7 @@ const mediaSchema = new Schema(
 );
 
 mediaSchema.index({ uploadedBy: 1, createdAt: -1 });
+mediaSchema.index({ projectRef: 1, createdAt: -1 });
 mediaSchema.index({ folder: 1 });
 mediaSchema.index({ mimeType: 1 });
 

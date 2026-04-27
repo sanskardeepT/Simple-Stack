@@ -3,8 +3,8 @@ import { MediaModel } from "../../models/Media.js";
 import { paginate } from "../../utils/query.util.js";
 
 export const mediaRepository = {
-  findAll(query: Record<string, unknown>) {
-    const filter: Record<string, unknown> = {};
+  findAll(query: Record<string, unknown>, scope: Record<string, unknown>) {
+    const filter: Record<string, unknown> = { ...scope };
     if (typeof query.folder === "string" && query.folder.trim()) {
       filter.folder = query.folder.trim();
     }
@@ -25,14 +25,14 @@ export const mediaRepository = {
       allowedSort: ["createdAt", "updatedAt", "filename", "size"],
     });
   },
-  findById(id: string) {
-    return MediaModel.findById(id).lean().orFail(new ApiError(404, "NOT_FOUND", "Media not found")).exec();
+  findById(id: string, scope: Record<string, unknown> = {}) {
+    return MediaModel.findOne({ _id: id, ...scope }).lean().orFail(new ApiError(404, "NOT_FOUND", "Media not found")).exec();
   },
   create(data: Record<string, unknown>) {
     return MediaModel.create(data);
   },
-  delete(id: string) {
-    return MediaModel.findByIdAndDelete(id).lean().exec();
+  delete(id: string, scope: Record<string, unknown>) {
+    return MediaModel.findOneAndDelete({ _id: id, ...scope }).lean().exec();
   },
   updateStatus(id: string, status: string) {
     return MediaModel.findByIdAndUpdate(id, { $set: { status } }, { new: true }).lean().exec();

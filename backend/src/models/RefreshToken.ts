@@ -5,7 +5,7 @@ const refreshTokenSchema = new Schema(
     token: { type: String, required: true, trim: true, unique: true, index: true },
     userId: { type: Types.ObjectId, ref: "User", required: true },
     family: { type: String, required: true, trim: true },
-    role: { type: String, enum: ["admin", "editor", "viewer"], required: true },
+    role: { type: String, enum: ["superadmin", "user"], required: true },
     revoked: { type: Boolean, default: false },
     expiresAt: { type: Date, required: true },
   },

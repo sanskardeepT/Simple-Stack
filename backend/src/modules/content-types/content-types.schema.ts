@@ -2,10 +2,10 @@ import { z } from "zod";
 
 const fieldSchema = z.object({
   name: z.string().min(1).max(80),
-  type: z.enum(["text", "richtext", "number", "boolean", "date", "media", "relation", "json"]),
+  type: z.enum(["text", "richText", "number", "boolean", "image", "date", "select"]),
   required: z.boolean().optional().default(false),
   defaultValue: z.unknown().optional(),
-  options: z.unknown().optional(),
+  options: z.array(z.string().min(1)).optional(),
 });
 
 export const createContentTypeSchema = z.object({

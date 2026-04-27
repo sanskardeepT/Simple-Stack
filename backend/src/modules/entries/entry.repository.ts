@@ -17,8 +17,8 @@ type LeanEntry = {
 };
 
 export const entryRepository = {
-  async findAll(query: Record<string, unknown>) {
-    const filter = buildFilter(query as Parameters<typeof buildFilter>[0]);
+  async findAll(query: Record<string, unknown>, scope: Record<string, unknown>) {
+    const filter = { ...buildFilter(query as Parameters<typeof buildFilter>[0]), ...scope };
     return paginate(EntryModel.find(filter).lean(), {
       page: query.page as string | number | undefined,
       limit: query.limit as string | number | undefined,
@@ -27,8 +27,8 @@ export const entryRepository = {
       allowedSort: ["createdAt", "updatedAt", "title", "publishedAt", "viewCount"],
     });
   },
-  findById(id: string) {
-    return EntryModel.findById(id).lean<LeanEntry>().orFail(new ApiError(404, "NOT_FOUND", "Entry not found")).exec();
+  findById(id: string, scope: Record<string, unknown> = {}) {
+    return EntryModel.findOne({ _id: id, ...scope }).lean<LeanEntry>().orFail(new ApiError(404, "NOT_FOUND", "Entry not found")).exec();
   },
   findBySlug(slug: string, contentTypeId: string) {
     return EntryModel.findOne({ slug, contentTypeId }).lean<LeanEntry>().exec();
@@ -36,11 +36,11 @@ export const entryRepository = {
   create(data: Record<string, unknown>) {
     return EntryModel.create(data);
   },
-  update(id: string, data: Record<string, unknown>) {
-    return EntryModel.findByIdAndUpdate(id, data, { new: true, runValidators: true }).lean<LeanEntry>().exec();
+  update(id: string, data: Record<string, unknown>, scope: Record<string, unknown>) {
+    return EntryModel.findOneAndUpdate({ _id: id, ...scope }, data, { new: true, runValidators: true }).lean<LeanEntry>().exec();
   },
-  softDelete(id: string) {
-    return EntryModel.findByIdAndUpdate(id, { $set: { status: "archived" } }, { new: true }).lean<LeanEntry>().exec();
+  softDelete(id: string, scope: Record<string, unknown>) {
+    return EntryModel.findOneAndUpdate({ _id: id, ...scope }, { $set: { status: "archived" } }, { new: true }).lean<LeanEntry>().exec();
   },
   incrementViewCount(id: string) {
     return EntryModel.updateOne({ _id: id }, { $inc: { viewCount: 1 } }).exec();

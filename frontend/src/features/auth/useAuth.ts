@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { changePasswordApi, loginApi, logoutApi, meApi, registerApi } from "../../lib/api/auth.api.js";
-import { authStore, useAuthStore } from "../../lib/store/auth.store.js";
+import { changePasswordApi, loginApi, logoutApi, meApi, registerApi, resendOtpApi, verifyOtpApi } from "../../lib/api/auth.api.js";
+import { authStore, type AuthUser, useAuthStore } from "../../lib/store/auth.store.js";
 
 export function useBootstrapAuth() {
   const setLoading = useAuthStore((state) => state.setLoading);
@@ -12,7 +12,7 @@ export function useBootstrapAuth() {
     queryKey: ["auth", "me"],
     queryFn: async () => {
       const response = await meApi();
-      return response.data.data as { _id: string; name: string; email: string; role: "admin" | "editor" | "viewer" };
+      return response.data.data as AuthUser;
     },
     retry: false,
   });
@@ -40,7 +40,7 @@ export function useLogin() {
   return useMutation({
     mutationFn: async (payload: { email: string; password: string }) => {
       const response = await loginApi(payload);
-      return response.data.data as { user: { _id: string; name: string; email: string; role: "admin" | "editor" | "viewer" }; accessToken: string };
+      return response.data.data as { user: AuthUser; accessToken: string };
     },
     onSuccess: (data) => setAuth(data.user, data.accessToken),
   });
@@ -49,11 +49,34 @@ export function useLogin() {
 export function useRegister() {
   const setAuth = useAuthStore((state) => state.setAuth);
   return useMutation({
-    mutationFn: async (payload: { name: string; email: string; password: string }) => {
+    mutationFn: async (payload: { name: string; email: string; phone: string; password: string }) => {
       const response = await registerApi(payload);
-      return response.data.data as { user: { _id: string; name: string; email: string; role: "admin" | "editor" | "viewer" }; accessToken: string };
+      return response.data.data as { user: AuthUser; nextStep: string };
     },
-    onSuccess: (data) => setAuth(data.user, data.accessToken),
+  });
+}
+
+export function useVerifyOtp() {
+  const setAuth = useAuthStore((state) => state.setAuth);
+  return useMutation({
+    mutationFn: async (payload: { email: string; type: "email" | "sms"; code: string }) => {
+      const response = await verifyOtpApi(payload);
+      return response.data.data as { user: AuthUser; accessToken?: string; verified: "partial" | "complete" };
+    },
+    onSuccess: (data) => {
+      if (data.accessToken) {
+        setAuth(data.user, data.accessToken);
+      }
+    },
+  });
+}
+
+export function useResendOtp() {
+  return useMutation({
+    mutationFn: async (payload: { email: string; type: "email" | "sms" }) => {
+      const response = await resendOtpApi(payload);
+      return response.data.data as { sent: true };
+    },
   });
 }
 

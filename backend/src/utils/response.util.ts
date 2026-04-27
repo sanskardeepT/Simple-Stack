@@ -2,16 +2,18 @@ import type { Response } from "express";
 
 export function ok<T>(res: Response, data: T, meta?: Record<string, unknown>): Response {
   return res.status(200).json({
-    status: "success",
+    success: true,
     data,
+    message: "OK",
     ...(meta ? { meta } : {}),
   });
 }
 
 export function created<T>(res: Response, data: T): Response {
   return res.status(201).json({
-    status: "success",
+    success: true,
     data,
+    message: "Created",
   });
 }
 

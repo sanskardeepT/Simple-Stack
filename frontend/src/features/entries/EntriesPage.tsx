@@ -17,6 +17,7 @@ export function EntriesPage() {
   const [newTitle, setNewTitle] = useState("");
   const [newContentTypeId, setNewContentTypeId] = useState("");
   const [newStatus, setNewStatus] = useState<"draft" | "published">("draft");
+  const [newFields, setNewFields] = useState<Record<string, unknown>>({});
 
   const query = useEntries({ page, search: search || undefined });
   const ctQuery = useContentTypes({ limit: 100 });
@@ -25,22 +26,61 @@ export function EntriesPage() {
   const navigate = useNavigate();
 
   const entries = (query.data?.data ?? []) as Array<Record<string, unknown>>;
+  const contentTypes = (ctQuery.data?.data ?? []) as Array<Record<string, unknown>>;
+  const selectedType = contentTypes.find((type) => String(type._id) === newContentTypeId);
+  const selectedFields = Array.isArray(selectedType?.fields) ? selectedType.fields as Array<{ name: string; type: string; required?: boolean; options?: string[] }> : [];
 
   async function handleCreate() {
     if (!newTitle || !newContentTypeId) return;
-    await createEntry.mutateAsync({ title: newTitle, contentTypeId: newContentTypeId, fields: {}, status: newStatus } as never);
+    await createEntry.mutateAsync({ title: newTitle, contentTypeId: newContentTypeId, fields: newFields, status: newStatus } as never);
     setShowCreate(false);
     setNewTitle("");
     setNewContentTypeId("");
     setNewStatus("draft");
+    setNewFields({});
+  }
+
+  function updateNewField(name: string, value: unknown) {
+    setNewFields((current) => ({ ...current, [name]: value }));
+  }
+
+  function renderFieldInput(field: { name: string; type: string; required?: boolean; options?: string[] }) {
+    const value = newFields[field.name] ?? "";
+    if (field.type === "richText") {
+      return <textarea className="field-input" value={String(value)} onChange={(e) => updateNewField(field.name, e.target.value)} />;
+    }
+    if (field.type === "number") {
+      return <input className="field-input" type="number" value={String(value)} onChange={(e) => updateNewField(field.name, Number(e.target.value))} />;
+    }
+    if (field.type === "boolean") {
+      return (
+        <select className="field-input" value={String(value)} onChange={(e) => updateNewField(field.name, e.target.value === "true")}>
+          <option value="">Choose...</option>
+          <option value="true">Yes</option>
+          <option value="false">No</option>
+        </select>
+      );
+    }
+    if (field.type === "date") {
+      return <input className="field-input" type="date" value={String(value)} onChange={(e) => updateNewField(field.name, e.target.value)} />;
+    }
+    if (field.type === "select") {
+      return (
+        <select className="field-input" value={String(value)} onChange={(e) => updateNewField(field.name, e.target.value)}>
+          <option value="">Choose...</option>
+          {(field.options ?? []).map((option) => <option key={option} value={option}>{option}</option>)}
+        </select>
+      );
+    }
+    return <input className="field-input" placeholder={field.type === "image" ? "Paste image URL from Media" : ""} value={String(value)} onChange={(e) => updateNewField(field.name, e.target.value)} />;
   }
 
   return (
     <div className="stack-lg">
       <div className="page-header">
         <div>
-          <div className="page-title">Content</div>
-          <div className="page-subtitle">All your content entries in one place.</div>
+          <div className="page-title">Your items</div>
+          <div className="page-subtitle">Add, edit, and publish website content without touching code.</div>
         </div>
         <button className="btn btn-primary" onClick={() => setShowCreate(true)}>+ New Entry</button>
       </div>
@@ -116,17 +156,28 @@ export function EntriesPage() {
               <input className="field-input" placeholder="e.g. My First Blog Post" value={newTitle} onChange={(e) => setNewTitle(e.target.value)} />
             </div>
             <div className="field">
-              <label className="field-label">Content Type</label>
+              <label className="field-label">What kind of content?</label>
               <select className="field-input" value={newContentTypeId} onChange={(e) => setNewContentTypeId(e.target.value)}>
                 <option value="">Select a content type…</option>
-                {((ctQuery.data?.data ?? []) as Array<Record<string, unknown>>).map((ct) => (
+                {contentTypes.map((ct) => (
                   <option key={String(ct._id)} value={String(ct._id)}>{String(ct.name)}</option>
                 ))}
               </select>
               {(ctQuery.data?.data ?? []).length === 0 && (
-                <span className="field-hint">No content types yet. <Link to="/content-types" style={{ color: "var(--accent)" }}>Create one first.</Link></span>
+                <span className="field-hint">No content types yet. <Link to="/app/content-types" style={{ color: "var(--accent)" }}>Create one first.</Link></span>
               )}
             </div>
+            {selectedFields.length > 0 && (
+              <div className="stack-sm">
+                <div className="section-title">Content details</div>
+                {selectedFields.map((field) => (
+                  <div className="field" key={field.name}>
+                    <label className="field-label">{field.name}{field.required ? " *" : ""}</label>
+                    {renderFieldInput(field)}
+                  </div>
+                ))}
+              </div>
+            )}
             <div className="field">
               <label className="field-label">Status</label>
               <select className="field-input" value={newStatus} onChange={(e) => setNewStatus(e.target.value as "draft" | "published")}>

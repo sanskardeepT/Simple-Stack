@@ -6,8 +6,21 @@ import { authService } from "./auth.service.js";
 export const authController = {
   async register(req: Request, res: Response): Promise<Response> {
     const result = await authService.register(req.body);
-    authService.setRefreshCookie(res, result.refreshToken);
-    return created(res, { user: result.user, accessToken: result.accessToken });
+    return created(res, result);
+  },
+  async verifyOtp(req: Request, res: Response): Promise<Response> {
+    const result = await authService.verifyOtp(req.body);
+    if (result.refreshToken) {
+      authService.setRefreshCookie(res, result.refreshToken);
+    }
+    return ok(res, {
+      user: result.user,
+      accessToken: result.accessToken,
+      verified: !result.accessToken ? "partial" : "complete",
+    });
+  },
+  async resendOtp(req: Request, res: Response): Promise<Response> {
+    return ok(res, await authService.resendOtp(req.body));
   },
   async login(req: Request, res: Response): Promise<Response> {
     const result = await authService.login(req.body.email, req.body.password);

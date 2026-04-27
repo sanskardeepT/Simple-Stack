@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Suspense, lazy } from "react";
+import { Suspense, lazy, useState } from "react";
 import { createBrowserRouter, NavLink, Outlet } from "react-router-dom";
 import { ErrorBoundary } from "../components/ErrorBoundary.js";
 import { PageSkeleton } from "../components/PageSkeleton.js";
@@ -9,6 +9,7 @@ import { useAuthStore } from "../lib/store/auth.store.js";
 
 const LoginPage = lazy(async () => import("../features/auth/LoginPage.js").then((m) => ({ default: m.LoginPage })));
 const RegisterPage = lazy(async () => import("../features/auth/RegisterPage.js").then((m) => ({ default: m.RegisterPage })));
+const VerifyOtpPage = lazy(async () => import("../features/auth/VerifyOtpPage.js").then((m) => ({ default: m.VerifyOtpPage })));
 const DashboardPage = lazy(async () => import("../features/app/DashboardPage.js").then((m) => ({ default: m.DashboardPage })));
 const EntriesPage = lazy(async () => import("../features/entries/EntriesPage.js").then((m) => ({ default: m.EntriesPage })));
 const EntryDetailPage = lazy(async () => import("../features/entries/EntryDetailPage.js").then((m) => ({ default: m.EntryDetailPage })));
@@ -18,7 +19,13 @@ const AnalyticsDashboard = lazy(async () => import("../features/analytics/Analyt
 const SettingsPage = lazy(async () => import("../features/settings/SettingsPage.js").then((m) => ({ default: m.SettingsPage })));
 const UsersPage = lazy(async () => import("../features/users/UsersPage.js").then((m) => ({ default: m.UsersPage })));
 const ConnectPage = lazy(async () => import("../features/connect/ConnectPage.js").then((m) => ({ default: m.ConnectPage })));
+const SubscriptionPage = lazy(async () => import("../features/subscription/SubscriptionPage.js").then((m) => ({ default: m.SubscriptionPage })));
 const UnauthorizedPage = lazy(async () => import("../features/app/UnauthorizedPage.js").then((m) => ({ default: m.UnauthorizedPage })));
+const NotFoundPage = lazy(async () => import("../features/app/NotFoundPage.js").then((m) => ({ default: m.NotFoundPage })));
+const MarketingHomePage = lazy(async () => import("../features/marketing/MarketingHomePage.js").then((m) => ({ default: m.MarketingHomePage })));
+const PricingPage = lazy(async () => import("../features/marketing/PricingPage.js").then((m) => ({ default: m.PricingPage })));
+const BlogPage = lazy(async () => import("../features/marketing/BlogPage.js").then((m) => ({ default: m.BlogPage })));
+const OnboardingTour = lazy(async () => import("../features/app/OnboardingTour.js").then((m) => ({ default: m.OnboardingTour })));
 
 function Shell({ children }: { children: ReactNode }) {
   return (
@@ -29,23 +36,28 @@ function Shell({ children }: { children: ReactNode }) {
 }
 
 const NAV_ITEMS = [
-  { to: "/", label: "Dashboard", icon: "⬡", section: "main", exact: true },
-  { to: "/entries", label: "Content", icon: "✦", section: "main" },
-  { to: "/media", label: "Media", icon: "◈", section: "main" },
-  { to: "/connect", label: "Connect Website", icon: "⟳", section: "main" },
-  { to: "/content-types", label: "Content Types", icon: "⊞", section: "manage", roles: ["admin", "editor"] as const },
-  { to: "/analytics", label: "Analytics", icon: "◎", section: "manage", roles: ["admin"] as const },
-  { to: "/users", label: "Users", icon: "⊕", section: "manage", roles: ["admin"] as const },
-  { to: "/settings", label: "Settings", icon: "◉", section: "manage", roles: ["admin"] as const },
+  { to: "/app", label: "Dashboard", icon: "⬡", section: "main", exact: true },
+  { to: "/app/entries", label: "Content", icon: "✦", section: "main" },
+  { to: "/app/media", label: "Media", icon: "◈", section: "main" },
+  { to: "/app/connect", label: "Connect Website", icon: "⟳", section: "main" },
+  { to: "/app/billing", label: "Billing", icon: "₹", section: "main" },
+  { to: "/app/content-types", label: "What kind of content?", icon: "⊞", section: "manage" },
+  { to: "/app/analytics", label: "Activity", icon: "◎", section: "manage", roles: ["superadmin"] as const },
+  { to: "/app/users", label: "Users", icon: "⊕", section: "manage", roles: ["superadmin"] as const },
+  { to: "/app/settings", label: "Settings", icon: "◉", section: "manage", roles: ["superadmin"] as const },
 ] as const;
 
 function AppLayout() {
   const logout = useLogout();
   const user = useAuthStore((state) => state.user);
+  const [showOnboarding, setShowOnboarding] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return !window.localStorage.getItem("simplestack:onboarding-dismissed");
+  });
 
   const visibleItems = NAV_ITEMS.filter((item) => {
     if (!("roles" in item) || !item.roles) return true;
-    return (item.roles as readonly ("admin" | "editor" | "viewer")[]).includes(user?.role as "admin" | "editor" | "viewer");
+    return (item.roles as readonly ("superadmin" | "user")[]).includes(user?.role as "superadmin" | "user");
   });
 
   const mainItems = visibleItems.filter((i) => i.section === "main");
@@ -53,6 +65,7 @@ function AppLayout() {
 
   return (
     <div className="app-shell">
+      {showOnboarding && <Shell><OnboardingTour onClose={() => { window.localStorage.setItem("simplestack:onboarding-dismissed", "1"); setShowOnboarding(false); }} /></Shell>}
       <aside className="sidebar">
         <div className="sidebar-logo">
           <div className="sidebar-logo-icon">S</div>
@@ -118,11 +131,16 @@ function AppLayout() {
 }
 
 export const router = createBrowserRouter([
+  { path: "/", element: <Shell><MarketingHomePage /></Shell> },
+  { path: "/pricing", element: <Shell><PricingPage /></Shell> },
+  { path: "/blog", element: <Shell><BlogPage /></Shell> },
   { path: "/login", element: <Shell><LoginPage /></Shell> },
   { path: "/register", element: <Shell><RegisterPage /></Shell> },
+  { path: "/verify", element: <Shell><VerifyOtpPage /></Shell> },
   { path: "/unauthorized", element: <Shell><UnauthorizedPage /></Shell> },
+  { path: "*", element: <Shell><NotFoundPage /></Shell> },
   {
-    path: "/",
+    path: "/app",
     element: <ProtectedRoute><AppLayout /></ProtectedRoute>,
     children: [
       { index: true, element: <Shell><DashboardPage /></Shell> },
@@ -130,10 +148,11 @@ export const router = createBrowserRouter([
       { path: "entries/:id", element: <Shell><EntryDetailPage /></Shell> },
       { path: "media", element: <Shell><MediaPage /></Shell> },
       { path: "connect", element: <Shell><ConnectPage /></Shell> },
-      { path: "content-types", element: <ProtectedRoute allowedRoles={["admin", "editor"]}><Shell><ContentTypesPage /></Shell></ProtectedRoute> },
-      { path: "analytics", element: <ProtectedRoute allowedRoles={["admin"]}><Shell><AnalyticsDashboard /></Shell></ProtectedRoute> },
-      { path: "settings", element: <ProtectedRoute allowedRoles={["admin"]}><Shell><SettingsPage /></Shell></ProtectedRoute> },
-      { path: "users", element: <ProtectedRoute allowedRoles={["admin"]}><Shell><UsersPage /></Shell></ProtectedRoute> },
+      { path: "billing", element: <Shell><SubscriptionPage /></Shell> },
+      { path: "content-types", element: <Shell><ContentTypesPage /></Shell> },
+      { path: "analytics", element: <ProtectedRoute allowedRoles={["superadmin"]}><Shell><AnalyticsDashboard /></Shell></ProtectedRoute> },
+      { path: "settings", element: <ProtectedRoute allowedRoles={["superadmin"]}><Shell><SettingsPage /></Shell></ProtectedRoute> },
+      { path: "users", element: <ProtectedRoute allowedRoles={["superadmin"]}><Shell><UsersPage /></Shell></ProtectedRoute> },
     ],
   },
 ]);

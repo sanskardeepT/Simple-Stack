@@ -4,6 +4,7 @@ import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { useAuthStore } from "../../lib/store/auth.store.js";
 import { useLogin } from "./useAuth.js";
+import { getApiError } from "../../lib/api/client.js";
 
 const schema = z.object({ email: z.string().email(), password: z.string().min(1) });
 type F = z.infer<typeof schema>;
@@ -15,7 +16,7 @@ export function LoginPage() {
   const login = useLogin();
   const { register, handleSubmit, formState: { errors } } = useForm<F>({ resolver: zodResolver(schema) });
 
-  if (isAuthenticated) return <Navigate replace to="/" />;
+  if (isAuthenticated) return <Navigate replace to="/app" />;
 
   return (
     <div className="login-shell">
@@ -28,13 +29,13 @@ export function LoginPage() {
 
         {login.error && (
           <div className="alert alert-error">
-            {login.error instanceof Error ? login.error.message : "Login failed. Check your email and password."}
+            {getApiError(login.error)}
           </div>
         )}
 
         <form className="stack" onSubmit={handleSubmit(async (v) => {
           await login.mutateAsync(v);
-          navigate((location.state as { from?: { pathname?: string } } | null)?.from?.pathname ?? "/", { replace: true });
+          navigate((location.state as { from?: { pathname?: string } } | null)?.from?.pathname ?? "/app", { replace: true });
         })}>
           <div className="field">
             <label className="field-label">Email address</label>

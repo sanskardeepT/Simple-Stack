@@ -4,7 +4,7 @@ import { useBootstrapAuth } from "../features/auth/useAuth.js";
 import { useAuthStore } from "../lib/store/auth.store.js";
 import { PageSkeleton } from "./PageSkeleton.js";
 
-type Role = "admin" | "editor" | "viewer";
+type Role = "superadmin" | "user";
 
 export function ProtectedRoute({
   allowedRoles,

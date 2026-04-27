@@ -8,13 +8,16 @@ export type ApiClientError = {
 };
 
 type RefreshResponse = {
-  status: "success";
+  success: true;
   data: {
     user: {
       _id: string;
       name: string;
       email: string;
-      role: "admin" | "editor" | "viewer";
+      phone: string;
+      emailVerified: boolean;
+      phoneVerified: boolean;
+      role: "superadmin" | "user";
     };
     accessToken: string;
   };

@@ -21,6 +21,12 @@ export function AnalyticsDashboard() {
     totalEntries: 0,
     totalViews: 0,
     activeUsers: 0,
+    activeSubscribers: 0,
+    paidSubscribers: 0,
+    couponSubscribers: 0,
+    mrr: 0,
+    totalSitesConnected: 0,
+    liveSites: 0,
     viewsByDay: [],
     topEntries: [],
   };
@@ -42,15 +48,21 @@ export function AnalyticsDashboard() {
       <div className="grid-4">
         {[
           ["Total Users", stats.totalUsers],
-          ["Published Entries", stats.totalEntries],
-          ["Total Views", stats.totalViews],
-          ["Active Users", stats.activeUsers],
+          ["MRR", `Rs${stats.mrr}`],
+          ["Active Subscribers", stats.activeSubscribers],
+          ["Live Sites", stats.liveSites],
         ].map(([label, value]) => (
           <div key={String(label)} className="panel">
             <p className="muted">{label}</p>
-            <h2>{dashboard.isPending ? "..." : Number(value).toLocaleString()}</h2>
+            <h2>{dashboard.isPending ? "..." : typeof value === "number" ? Number(value).toLocaleString() : value}</h2>
           </div>
         ))}
+      </div>
+
+      <div className="grid-3">
+        <div className="panel"><p className="muted">Published entries</p><h3>{stats.totalEntries}</h3></div>
+        <div className="panel"><p className="muted">Coupon subscribers</p><h3>{stats.couponSubscribers}</h3></div>
+        <div className="panel"><p className="muted">Total sites connected</p><h3>{stats.totalSitesConnected}</h3></div>
       </div>
 
       <div className="grid-2">
