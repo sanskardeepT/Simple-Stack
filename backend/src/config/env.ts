@@ -25,7 +25,7 @@ const envSchema = z.object({
   CLOUDINARY_CLOUD_NAME: z.string().trim().default(""),
   CLOUDINARY_API_KEY: z.string().trim().default(""),
   CLOUDINARY_API_SECRET: z.string().trim().default(""),
-  ALLOWED_ORIGINS: z.string().min(1).default("http://localhost:5173"),
+  ALLOWED_ORIGINS: z.string().min(1).default("http://localhost:5173,http://127.0.0.1:5173"),
   AWS_S3_BUCKET: z.string().trim().default(""),
   AWS_ACCESS_KEY_ID: z.string().trim().default(""),
   AWS_SECRET_ACCESS_KEY: z.string().trim().default(""),

@@ -41,6 +41,7 @@ export function useCreateMedia() {
     onSuccess: (data) => {
       queryClient.setQueryData(mediaKeys.detail(String(data._id)), data);
       queryClient.invalidateQueries({ queryKey: mediaKeys.all });
+      toast.success("Image uploaded");
     },
   });
 }

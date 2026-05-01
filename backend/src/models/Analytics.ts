@@ -20,7 +20,6 @@ const analyticsSchema = new Schema(
 analyticsSchema.index({ event: 1, entityType: 1, createdAt: -1 });
 analyticsSchema.index({ entityId: 1, event: 1 });
 analyticsSchema.index({ userId: 1, createdAt: -1 });
-analyticsSchema.index({ createdAt: 1 }, { expireAfterSeconds: 60 * 60 * 24 * 90 });
 
 export type AnalyticsDocument = InferSchemaType<typeof analyticsSchema>;
 export const AnalyticsModel =

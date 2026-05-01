@@ -70,7 +70,7 @@ In development, OTP delivery falls back to backend terminal logs when provider k
 | `CLOUDINARY_CLOUD_NAME` | Optional | Needed for hosted media uploads |
 | `CLOUDINARY_API_KEY` | Optional | Needed for hosted media uploads |
 | `CLOUDINARY_API_SECRET` | Optional | Needed for hosted media uploads |
-| `ALLOWED_ORIGINS` | Yes | Comma-separated CORS origins |
+| `ALLOWED_ORIGINS` | Yes | Comma-separated CORS origins, for local dev usually `http://localhost:5173,http://127.0.0.1:5173` |
 | `AWS_S3_BUCKET` | Optional | Reserved for S3-based media/storage use |
 | `AWS_ACCESS_KEY_ID` | Optional | Reserved for S3-based media/storage use |
 | `AWS_SECRET_ACCESS_KEY` | Optional | Reserved for S3-based media/storage use |

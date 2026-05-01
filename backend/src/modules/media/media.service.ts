@@ -9,6 +9,7 @@ import { mediaRepository } from "./media.repository.js";
 
 const uploadRoot = path.resolve(process.cwd(), "uploads");
 const allowedMimeTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+const maxImageSizeBytes = 300 * 1024;
 
 const cloudinaryEnabled = Boolean(env.CLOUDINARY_CLOUD_NAME && env.CLOUDINARY_API_KEY && env.CLOUDINARY_API_SECRET);
 
@@ -81,8 +82,8 @@ export const mediaService = {
     if (!allowedMimeTypes.includes(file.mimetype)) {
       throw new ApiError(400, "INVALID_FILE_TYPE", "Only JPG, PNG, WebP, and GIF images are allowed");
     }
-    if (file.size > 10 * 1024 * 1024) {
-      throw new ApiError(400, "FILE_TOO_LARGE", "File size must be 10MB or less");
+    if (file.size > maxImageSizeBytes) {
+      throw new ApiError(400, "FILE_TOO_LARGE", "Image size must be 300KB or less");
     }
 
     const stored = await storeFile(file, dto.folder ?? "root");

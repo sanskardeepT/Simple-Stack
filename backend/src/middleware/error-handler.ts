@@ -1,4 +1,5 @@
 import type { NextFunction, Request, Response } from "express";
+import multer from "multer";
 import mongoose from "mongoose";
 import { env } from "../config/env.js";
 import { ApiError } from "../lib/errors.js";
@@ -30,6 +31,15 @@ export function errorHandler(error: unknown, req: Request, res: Response, _next:
       success: false,
       code: "INVALID_ID",
       message: `Invalid ${error.path}`,
+    });
+    return;
+  }
+
+  if (error instanceof multer.MulterError) {
+    res.status(400).json({
+      success: false,
+      code: error.code === "LIMIT_FILE_SIZE" ? "FILE_TOO_LARGE" : "UPLOAD_ERROR",
+      message: error.code === "LIMIT_FILE_SIZE" ? "Image size must be 300KB or less" : error.message,
     });
     return;
   }

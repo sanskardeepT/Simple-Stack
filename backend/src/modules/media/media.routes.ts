@@ -8,7 +8,7 @@ import { mediaController } from "./media.controller.js";
 import { mediaCreateSchema, mediaIdSchema, mediaListSchema } from "./media.schema.js";
 
 const router = Router();
-const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 300 * 1024 } });
 
 router.use(authenticate, checkSubscription);
 router.get("/", authorize("content:read"), validate(mediaListSchema), async (req, res) => mediaController.list(req, res));

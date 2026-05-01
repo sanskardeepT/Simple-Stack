@@ -23,7 +23,7 @@ export function validate(schema: AnyZodObject) {
     }
 
     req.body = result.data.body;
-    req.query = result.data.query as Request["query"];
+    Object.assign(req.query, result.data.query);
     req.params = result.data.params as Request["params"];
     next();
   };

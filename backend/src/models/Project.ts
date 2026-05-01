@@ -15,8 +15,5 @@ const projectSchema = new Schema(
   },
 );
 
-projectSchema.index({ projectId: 1 }, { unique: true });
-projectSchema.index({ apiKey: 1 }, { unique: true });
-
 export type ProjectDocument = InferSchemaType<typeof projectSchema>;
 export const ProjectModel = mongoose.models.Project || mongoose.model<ProjectDocument>("Project", projectSchema);
