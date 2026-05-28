@@ -1,119 +1,428 @@
-# SimpleStack
+# 🚀 SimpleStack
 
-SimpleStack is a headless CMS SaaS for developers and small businesses who want to manage website content without shipping code changes for every update. It combines a React app, an Express API, subscriptions, media management, public content delivery, and a lightweight connect SDK in one monorepo.
+SimpleStack is a modern headless CMS SaaS platform built for developers, startups, agencies, and small businesses that want complete control over website content without redeploying code for every small update.
 
-## Tech Stack
+It combines a powerful API backend, scalable content delivery system, media management, authentication, subscriptions, and an embeddable SDK into one developer-focused platform.
 
-- Backend: Node.js, Express 5, TypeScript, MongoDB, Mongoose
-- Cache and queues: Redis, BullMQ
-- Frontend: React 18, Vite, TypeScript, Zustand, React Query, React Router
-- Payments: Razorpay
-- Media: Cloudinary
-- Messaging: Resend, MSG91
+Unlike traditional CMS platforms that feel bloated and restrictive, SimpleStack focuses on speed, flexibility, clean architecture, and easy integration with modern frontend frameworks.
 
-## Local Development Setup
+---
 
-### Prerequisites
+# ✨ What SimpleStack Does
 
-- Node.js 20+
-- MongoDB running locally or reachable via connection string
-- Redis running locally on `127.0.0.1:6379`
+SimpleStack allows teams to:
 
-### Steps
+* Manage website content visually
+* Deliver content through APIs
+* Upload and manage media assets
+* Handle subscriptions and billing
+* Embed dynamic content into any website
+* Connect frontend apps without backend complexity
 
-1. Clone the repository.
-2. Install dependencies:
+The platform is designed to work seamlessly with:
+
+* React
+* Next.js
+* Vite
+* Static websites
+* Custom frontend stacks
+* Mobile apps
+
+---
+
+# 🎯 Key Features
+
+## 🧠 Headless CMS Architecture
+
+SimpleStack follows a headless-first architecture where:
+
+* Content lives in the backend
+* APIs deliver structured data
+* Frontends remain completely independent
+
+This makes deployments faster, cleaner, and more scalable.
+
+---
+
+## ⚡ Real-Time Content Management
+
+Update website content instantly without:
+
+* Rebuilding frontend apps
+* Touching production code
+* Redeploying servers
+
+Perfect for:
+
+* Landing pages
+* Blogs
+* Startup websites
+* Product catalogs
+* Marketing sections
+* Dynamic UI content
+
+---
+
+## 🖼️ Media Management
+
+Built-in media handling powered by Cloudinary:
+
+* Image uploads
+* Optimized delivery
+* CDN support
+* Hosted asset management
+* Scalable storage support
+
+Future-ready AWS S3 integration is also included.
+
+---
+
+## 💳 Subscription & Billing System
+
+Integrated Razorpay recurring subscription flow:
+
+* Monthly plans
+* Webhook verification
+* Subscription activation
+* Coupon support
+* Lifetime access system
+
+The platform includes a special coupon system for founder/admin-level activation.
+
+---
+
+## 🔐 Authentication & OTP System
+
+Secure authentication flows with:
+
+* JWT access tokens
+* Refresh token rotation
+* Email OTP verification
+* SMS OTP verification
+* Role-based access control
+
+OTP delivery works even during local development by logging codes directly in the backend terminal when provider APIs are not configured.
+
+---
+
+## 📡 Embedded connect.js SDK
+
+SimpleStack provides a lightweight SDK that allows developers to embed managed content into any website using a single script tag.
+
+```html
+<script 
+  src="https://cdn.simplestack.in/connect.js" 
+  data-project="PROJECT_ID">
+</script>
+```
+
+The SDK automatically resolves the correct API base unless overridden manually.
+
+---
+
+# 🛠️ Tech Stack
+
+## Backend
+
+* Node.js
+* Express 5
+* TypeScript
+* MongoDB
+* Mongoose
+
+## Frontend
+
+* React 18
+* Vite
+* TypeScript
+* Zustand
+* React Query
+* React Router
+
+## Infrastructure
+
+* Redis
+* BullMQ
+* Docker
+* Render Deployment
+
+## Integrations
+
+* Razorpay
+* Cloudinary
+* Resend
+* MSG91
+
+---
+
+# 📂 Monorepo Structure
+
+```bash
+simplestack/
+│
+├── backend/
+├── frontend/
+├── packages/
+├── scripts/
+├── docker/
+└── render.yaml
+```
+
+---
+
+# ⚡ Local Development Setup
+
+## Prerequisites
+
+Before starting, ensure the following are installed:
+
+* Node.js 20+
+* MongoDB
+* Redis
+
+Redis should run locally on:
+
+```bash
+127.0.0.1:6379
+```
+
+---
+
+# 🚀 Getting Started
+
+## 1️⃣ Clone Repository
+
+```bash
+git clone <your-repository-url>
+cd simplestack
+```
+
+---
+
+## 2️⃣ Install Dependencies
 
 ```bash
 npm run install:all
 ```
 
-3. Review and update local environment files:
+---
 
-- `backend/.env`
-- `frontend/.env`
+## 3️⃣ Configure Environment Variables
 
-4. Start backend and frontend together:
+Update:
+
+```bash
+backend/.env
+frontend/.env
+```
+
+with your local configuration.
+
+---
+
+## 4️⃣ Start Development Servers
 
 ```bash
 npm run dev
 ```
 
-5. Open the frontend at `http://localhost:5173`.
+Frontend runs on:
 
-In development, OTP delivery falls back to backend terminal logs when provider keys are not configured, so you can complete register and verify flows locally.
-
-## Environment Variables
-
-### Backend
-
-| Variable | Required | Notes |
-| --- | --- | --- |
-| `NODE_ENV` | Yes | `development`, `test`, or `production` |
-| `PORT` | Yes | Backend port |
-| `LOG_LEVEL` | Yes | `debug`, `info`, `warn`, `error` |
-| `MONGODB_URI` | Yes | MongoDB connection string |
-| `REDIS_URL` | Yes | Local Redis or Upstash `rediss://...` URL |
-| `JWT_ACCESS_SECRET` | Yes | Minimum 32 chars |
-| `JWT_REFRESH_SECRET` | Yes | Minimum 32 chars |
-| `JWT_ACCESS_EXPIRES` | Yes | Example: `15m` |
-| `JWT_REFRESH_EXPIRES` | Yes | Example: `7d` |
-| `RESEND_API_KEY` | Optional | Needed for real email OTP delivery |
-| `MSG91_API_KEY` | Optional | Needed for real SMS OTP delivery |
-| `MSG91_SENDER_ID` | Optional | Needed for MSG91 SMS sender identity |
-| `SUPERADMIN_EMAIL` | Yes | Seeded superadmin email on first boot |
-| `COUPON_CODE` | Yes | Defaults to `SANSKARDEEP` |
-| `RAZORPAY_KEY_ID` | Optional | Needed for live subscription checkout |
-| `RAZORPAY_KEY_SECRET` | Optional | Needed for live subscription checkout |
-| `RAZORPAY_PLAN_ID` | Optional | Razorpay recurring plan ID |
-| `RAZORPAY_WEBHOOK_SECRET` | Optional | Used to verify Razorpay webhooks |
-| `CLOUDINARY_CLOUD_NAME` | Optional | Needed for hosted media uploads |
-| `CLOUDINARY_API_KEY` | Optional | Needed for hosted media uploads |
-| `CLOUDINARY_API_SECRET` | Optional | Needed for hosted media uploads |
-| `ALLOWED_ORIGINS` | Yes | Comma-separated CORS origins, for local dev usually `http://localhost:5173,http://127.0.0.1:5173` |
-| `AWS_S3_BUCKET` | Optional | Reserved for S3-based media/storage use |
-| `AWS_ACCESS_KEY_ID` | Optional | Reserved for S3-based media/storage use |
-| `AWS_SECRET_ACCESS_KEY` | Optional | Reserved for S3-based media/storage use |
-| `AWS_REGION` | Optional | Reserved for S3-based media/storage use |
-
-### Frontend
-
-| Variable | Required | Notes |
-| --- | --- | --- |
-| `VITE_API_BASE_URL` | Yes | Example: `http://localhost:3000/api/v1` |
-
-## Admin Access
-
-On first backend boot, SimpleStack checks whether a `superadmin` user already exists. If none exists, it seeds one automatically using `SUPERADMIN_EMAIL`, marks email as verified, and logs the email in the backend terminal so the founder can use a password reset flow or manually set credentials.
-
-## Deployment (Render)
-
-### Backend
-
-- Deploy `backend` as a Render Web Service.
-- Set all backend environment variables in Render.
-- Ensure MongoDB and Redis/Upstash are reachable from the service.
-- Health check path: `/health`
-- A ready-to-import Render blueprint is included at `render.yaml`.
-
-### Frontend
-
-- Deploy `frontend` as a Static Site.
-- Build with the frontend workspace config used in the repo.
-- Point `VITE_API_BASE_URL` to your deployed backend, for example `https://api.yourdomain.com/api/v1`.
-- If serving the built frontend with Nginx, keep SPA fallback enabled.
-- For Vercel, `frontend/vercel.json` already includes the SPA rewrite to `index.html`.
-
-## Coupon System
-
-The coupon code `SANSKARDEEP` grants lifetime free access by activating the subscription without an expiry date. Paid subscriptions continue to use the regular Razorpay-backed monthly plan flow.
-
-## connect.js SDK
-
-Embed SimpleStack content on any connected website with:
-
-```html
-<script src="https://cdn.simplestack.in/connect.js" data-project="PROJECT_ID"></script>
+```bash
+http://localhost:5173
 ```
 
-The SDK resolves its API base dynamically unless you override it with `data-api-base`.
+---
+
+# 🔐 Backend Environment Variables
+
+| Variable              | Required | Purpose                   |
+| --------------------- | -------- | ------------------------- |
+| NODE_ENV              | Yes      | development / production  |
+| PORT                  | Yes      | Backend server port       |
+| LOG_LEVEL             | Yes      | Logging level             |
+| MONGODB_URI           | Yes      | MongoDB connection string |
+| REDIS_URL             | Yes      | Redis connection          |
+| JWT_ACCESS_SECRET     | Yes      | Access token secret       |
+| JWT_REFRESH_SECRET    | Yes      | Refresh token secret      |
+| RESEND_API_KEY        | Optional | Email OTP delivery        |
+| MSG91_API_KEY         | Optional | SMS OTP delivery          |
+| RAZORPAY_KEY_ID       | Optional | Razorpay integration      |
+| CLOUDINARY_CLOUD_NAME | Optional | Media upload support      |
+| ALLOWED_ORIGINS       | Yes      | CORS configuration        |
+
+---
+
+# 🌐 Frontend Environment Variables
+
+| Variable          | Required | Purpose         |
+| ----------------- | -------- | --------------- |
+| VITE_API_BASE_URL | Yes      | Backend API URL |
+
+Example:
+
+```bash
+VITE_API_BASE_URL=http://localhost:3000/api/v1
+```
+
+---
+
+# 👑 Superadmin Bootstrap System
+
+On the first backend startup:
+
+* SimpleStack checks for an existing superadmin
+* If none exists, it automatically seeds one
+* Email verification is bypassed for founder access
+* Credentials are logged securely in backend logs
+
+This makes initial platform setup extremely fast during deployment.
+
+---
+
+# 💳 Coupon & Subscription Logic
+
+SimpleStack supports:
+
+* Monthly recurring subscriptions
+* Lifetime access coupons
+* Promotional onboarding flows
+
+Default founder coupon:
+
+```bash
+SANSKARDEEP
+```
+
+This coupon activates unlimited lifetime access without subscription expiry.
+
+---
+
+# ☁️ Deployment Guide
+
+## Backend Deployment (Render)
+
+Deploy backend as:
+
+* Render Web Service
+
+Required steps:
+
+* Configure environment variables
+* Connect MongoDB
+* Connect Redis / Upstash
+* Set health check path:
+
+```bash
+/health
+```
+
+A production-ready:
+
+```bash
+render.yaml
+```
+
+is already included in the repository.
+
+---
+
+## Frontend Deployment
+
+Deploy frontend as:
+
+* Static Site
+* Vercel App
+* Nginx Build
+
+Update:
+
+```bash
+VITE_API_BASE_URL
+```
+
+to point to the deployed backend API.
+
+Example:
+
+```bash
+https://api.yourdomain.com/api/v1
+```
+
+---
+
+# 🔄 SPA Routing Support
+
+For frontend hosting:
+
+* Vercel rewrite rules are preconfigured
+* Nginx SPA fallback is supported
+* React Router deep links work correctly
+
+---
+
+# 📈 Why SimpleStack Is Different
+
+Most CMS platforms are either:
+
+* Too complex
+* Too expensive
+* Too slow
+* Too restrictive for developers
+
+SimpleStack focuses on:
+
+✅ Clean architecture
+✅ Developer-first workflows
+✅ Fast API delivery
+✅ Simple integrations
+✅ Scalable infrastructure
+✅ SaaS-ready monetization
+✅ Modern frontend compatibility
+
+---
+
+# 🧠 Future Roadmap
+
+Planned platform upgrades include:
+
+* Visual page builder
+* Multi-tenant workspaces
+* AI-assisted content generation
+* Analytics dashboard
+* API rate limiting
+* GraphQL support
+* Team collaboration tools
+* Edge CDN delivery
+* Real-time collaborative editing
+* Marketplace plugins
+
+---
+
+# 📌 Vision
+
+The vision behind SimpleStack is to build a lightweight, scalable, developer-friendly CMS ecosystem that removes the pain of traditional content management systems.
+
+The goal is simple:
+
+> Build content once. Deliver it anywhere.
+
+---
+
+# 📄 License
+
+This project is intended for educational, SaaS, and production-ready development purposes.
+
+---
+
+# ⭐ Support & Contribution
+
+If you found this project useful:
+
+* Star the repository
+* Fork the project
+* Open pull requests
+* Suggest improvements
+* Share feedback
+
+Modern websites deserve modern content infrastructure 🚀
